@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "D:\\Caleb\\Development\\Factorio\\Mods\\SmallFactorioMods"
+		}
+	],
+	"settings": {
+		"editor.rulers": [
+			160
+		],
+		"editor.minimap.maxColumn": 160
+	}
+}
