@@ -1,5 +1,5 @@
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
--- RECIPE BOOK CONTROL SCRIPTING
+-- FACTORIO ENCYCLOPEDIA CONTROL SCRIPTING
 
  -- debug adapter
 pcall(require,'__debugadapter__/debugadapter.lua')
