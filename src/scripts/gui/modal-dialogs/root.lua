@@ -6,6 +6,8 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 local util = require('lualib/util')
 
+local lua_object_members = require('scripts/data/lua-object-members')
+
 local modal_dialog = {}
 
 -- -----------------------------------------------------------------------------
@@ -32,14 +34,16 @@ function modal_dialog.create(parent, category, name, action_type)
   content_pane.style.horizontally_stretchable = true
   -- HARDCODED PROTOTYPE INFO FOR NOW
   local table = content_pane.add{type='table', name='fe_modal_content_prototype_table', style='bordered_table', column_count=2}
-  for k,v in pairs(global.encyclopedia.entities[name].prototype) do
+  local prototype = global.encyclopedia.entities[name].prototype
+  for n,_ in pairs(lua_object_members['LuaEntityPrototype']) do
+    local v = prototype[n]
     if type(v) == 'table' then
       v = serpent.line(v)
     end
     local curtype = type(v)
-    if type(v) ~= 'userdata' then
-      table.add{type='label', name='fe_modal_content_prototype_table_label_'..k, caption=k}
-      table.add{type='label', name='fe_modal_content_prototype_table_value_'..k, caption=v}
+    if type(v) ~= 'userdata' and v ~= nil then
+      table.add{type='label', name='fe_modal_content_prototype_table_label_'..n, caption=n}
+      table.add{type='label', name='fe_modal_content_prototype_table_value_'..n, caption=v}
     end
   end
   -- END HARDCODED
