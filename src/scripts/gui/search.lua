@@ -33,11 +33,11 @@ local function action_button_clicked(e)
   local player = game.get_player(e.player_index)
   local gui_data = global.players[e.player_index].gui
   local search_gui = gui_data.search
-  if gui_data.modal_dialog then
+  if gui_data.modal then
     modal_dialog.destroy(gui_data, e.player_index)
   end
   -- create modal dialog
-  modal_dialog.create(player.gui.screen, search_gui.selected_category, search_gui.elems.choose_elem_button.elem_value, 'view_prototype')
+  gui_data.modal = modal_dialog.create(player, player.gui.screen, search_gui.selected_category, search_gui.elems.choose_elem_button.elem_value, 'view_prototype')
 end
 
 local handlers = {

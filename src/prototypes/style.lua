@@ -110,3 +110,16 @@ styles.fe_vertically_centered_flow = {
   type='horizontal_flow_style',
   vertical_align = 'center'
 }
+
+-- -----------------------------------------------------------------------------
+-- SCROLL PANE STYLES
+
+styles.fe_prototype_data_scroll_pane = {
+  type = 'scroll_pane_style',
+  parent = 'scroll_pane',
+  background_graphical_set = {
+    base = {
+      center = {position={76,8}, size=1}
+    }
+  }
+}
