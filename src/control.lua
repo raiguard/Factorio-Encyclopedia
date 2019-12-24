@@ -9,25 +9,25 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 local util = require('lualib/util')
 
+-- modules
+local data = require('scripts/data/root')
+local search_gui = require('scripts/gui/search')
+
 -- INSPECT GLOBAL (DEBUG ADAPTER)
 event.register('debug-inspect-global', function(e)
   local foo = 'bar' -- set a breakpoint here. inspect global by hitting Control + Shift + Enter!
 end)
 
 -- -----------------------------------------------------------------------------
--- PROTOTYPING
-
-local handlers = {
-  search_textfield_text_changed = search_textfield_text_changed
-}
-
-event.on_load(function()
-  event.load_conditional_handlers(handlers)
-end)
+-- EVENT HANDLERS
 
 local function setup_player(player)
-  global.players[player.index] = {}
-  mod_gui.get_button_flow(player).add{type='button', name='rb_search_button', style=mod_gui.button_style, caption='Recipe Book'}
+  global.players[player.index] = {
+    gui = {}
+  }
+  local button = mod_gui.get_button_flow(player).add{type='button', name='fe_mod_gui_button', style=mod_gui.button_style,
+                                                     caption={'gui-general.mod-gui-button-caption'}}
+  global.players[player.index].gui.mod_gui = {top_button=button}
 end
 
 event.on_init(function()
@@ -35,23 +35,22 @@ event.on_init(function()
   for _,player in pairs(game.players) do
     setup_player(player)
   end
-  global.prototype_dictionaries = {}
+  data.build_encyclopedia()
+end)
+
+event.on_configuration_changed(function()
+  global.encyclopedia = nil
+  data.build_encyclopedia()
 end)
 
 event.on_player_created(function(e)
   setup_player(game.get_player(e.player_index))
 end)
 
+event.register('fe-search', function(e)
+  search_gui.toggle(game.get_player(e.player_index), true)
+end)
+
 event.on_gui_click(function(e)
-  local player = game.get_player(e.player_index)
-  local frame_flow = mod_gui.get_frame_flow(player)
-  if not frame_flow.rb_window then -- create the window
-    local window = frame_flow.add{type='frame', name='rb_window', style='dialog_frame', direction='vertical'}
-    
-  else -- destroy the window
-    for name, handler in pairs(handlers) do
-      event.deregister_conditional(handler, {name=name, player_index=player.index})
-    end
-    frame_flow.rb_window.destroy()
-  end
-end, {gui_filters='rb_search_button'})
+  search_gui.toggle(game.get_player(e.player_index))
+end, {gui_filters='fe_mod_gui_button'})
