@@ -130,10 +130,14 @@ end
 
 -- when a string gets translated
 event.on_string_translated(function(e)
+  local profiler = game.create_profiler()
   local player_table = global.dictionaries[e.player_index]
   for i,t in ipairs(player_table.__build) do
     local prototype_dictionary = t.prototype_dictionary
     local dict = t.dictionary
+    if type(e.localised_string) == 'string' then
+       return
+    end
     local serialised_key = dictionary.serialise_localised_string(e.localised_string)
     local dict_match = prototype_dictionary[serialised_key]
     if dict_match then -- if this translation belongs to this table
@@ -159,6 +163,7 @@ event.on_string_translated(function(e)
       break
     end
   end
+  game.print(profiler)
 end)
 
 event.on_init(function()

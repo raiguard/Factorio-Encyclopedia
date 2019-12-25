@@ -41,18 +41,18 @@ end)
 local function recursive_prototype_table(t, parent, subtable_count)
   subtable_count = subtable_count or 0
   local table = parent.add{type='table', name='fe_subtable_'..subtable_count, style='bordered_table', column_count=2}
-  table.add{type='label', name='fe_table_header_label', style='caption_label', caption='key'}
-  table.add{type='label', name='fe_table_header_value', style='caption_label', caption='value'}
+  table.add{type='label', name='fe_prototype_table_header_label', style='caption_label', caption='key'}
+  table.add{type='label', name='fe_prototype_table_header_value', style='caption_label', caption='value'}
   for k,v in pairs(t) do
-    table.add{type='label', name='fe_table_label_'..k, caption=k}
-    local type = type(v)
-    if type == 'table' then
+    table.add{type='label', name='fe_prototype_table_label_'..k, caption=k}
+    local value_type = type(v)
+    if value_type == 'table' then
       subtable_count = subtable_count + 1
       recursive_prototype_table(v, table, subtable_count)
-    elseif type == 'userdata' then
-      table.add{type='label', name='fe_table_value_'..k, caption=serpent.line(v)}.style.horizontally_stretchable = true
+    elseif value_type == 'userdata' then
+      table.add{type='label', name='fe_prototype_table_value_'..k, caption=serpent.line(v)}.style.horizontally_stretchable = true
     else
-      table.add{type='label', name='fe_table_value_'..k, caption=v}.style.horizontally_stretchable = true
+      table.add{type='label', name='fe_prototype_table_value_'..k, caption=v}.style.horizontally_stretchable = true
     end
   end
   return table
@@ -67,7 +67,7 @@ function modal_dialog.create(player, parent, category, name, action_type)
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
-               caption={'gui-modal.titlebar-label-caption-'..action_type, global.encyclopedia.entities[name].prototype.localised_name}}.style.left_padding = 7
+               caption={'gui-modal.titlebar-label-caption-'..action_type, global.encyclopedia.items[name].prototype.localised_name}}.style.left_padding = 7
   local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
   pusher.drag_target = window
   pusher.style.horizontally_stretchable = true
@@ -80,9 +80,9 @@ function modal_dialog.create(player, parent, category, name, action_type)
   local content_pane = window.add{type='scroll-pane', name='fe_modal_content_pane', style='fe_prototype_data_scroll_pane'}
   content_pane.style.maximal_width = 800
   content_pane.style.maximal_height = 800
-  local prototype = global.encyclopedia.entities[name].prototype
+  local prototype = global.encyclopedia.items[name].prototype
   local initial_table = {}
-  for n,_ in pairs(lua_object_members['LuaEntityPrototype']) do
+  for n,_ in pairs(lua_object_members['LuaItemPrototype']) do
     local v = prototype[n]
     if v ~= nil then
       initial_table[n] = v

@@ -91,8 +91,7 @@ styles.fe_search_content_pane = {
 styles.fe_search_dialog_pane = {
   type = 'frame_style',
   parent = 'window_content_frame',
-  vertically_stretchable = 'on',
-  width = 200
+  vertically_stretchable = 'on'
 }
 
 -- -----------------------------------------------------------------------------
@@ -112,6 +111,28 @@ styles.fe_vertically_centered_flow = {
 }
 
 -- -----------------------------------------------------------------------------
+-- LISTBOX STYLES
+
+styles.fe_search_results_listbox = {
+  type = 'list_box_style',
+  parent = 'list_box',
+  margin = 4,
+  scroll_pane_style = {
+    type = 'scroll_pane_style',
+    parent = 'list_box_scroll_pane',
+    graphical_set = { -- light frame instead of a dark frame
+      base = {position = {85, 0}, corner_size = 8, draw_type = "outer"},
+      shadow = default_inner_shadow
+    }
+  },
+  item_style = {
+    type = 'button_style',
+    parent = 'list_box_item',
+    horizontally_stretchable = 'on'
+  }
+}
+
+-- -----------------------------------------------------------------------------
 -- SCROLL PANE STYLES
 
 styles.fe_prototype_data_scroll_pane = {
@@ -120,6 +141,16 @@ styles.fe_prototype_data_scroll_pane = {
   background_graphical_set = {
     base = {
       center = {position={76,8}, size=1}
-    }
+    },
+    shadow = default_inner_shadow
   }
+}
+
+-- -----------------------------------------------------------------------------
+-- TEXTFIELD STYLES
+
+styles.fe_search_textfield = {
+  type = 'textbox_style',
+  width = 180,
+  right_margin = 4
 }
