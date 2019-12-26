@@ -121,7 +121,7 @@ function search_gui.toggle(player, category)
         event.deregister_conditional(handler, {name=name, player_index=player.index})
       end
     end
-  else -- create the GUI
+  elseif global.players[player.index].flags.allow_open_gui then -- create the GUI
     -- base window
     gui_data.base_elems = create_base_gui(player, mod_frame_flow)
     -- set active category button
@@ -137,6 +137,8 @@ function search_gui.toggle(player, category)
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                            gui_filters='fe_search_textfield'})
     global.players[player.index].gui.search = gui_data
+  else
+    player.print('Cannot open encyclopedia until search dictionary has been translated!')
   end
 end
 

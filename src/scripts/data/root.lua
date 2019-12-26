@@ -11,44 +11,28 @@ local util = require('lualib/util')
 local data = {}
 
 -- build encyclopedia data in preparation for translation
-dictionary.build_setup_function = function(serialise_localised_string)
-  local __build = {}
+local function build_translation_data(serialise_localised_string)
+  local build = {}
   local function generic_setup(key)
-    local iteration = {}
-    local names = {}
+    local data = {}
+    local strings = {}
+    local strings_len = 0
     for name,prototype in pairs(game[key..'_prototypes']) do
-      names[serialise_localised_string(prototype.localised_name)] = name
-      table.insert(iteration, prototype.localised_name)
+      data[serialise_localised_string(prototype.localised_name)] = name
+      strings_len = strings_len + 1
+      strings[strings_len] = prototype.localised_name
     end
-    return {iteration=iteration, names=names}
+    return {data=data, strings=strings}
   end
-  __build.achievement = generic_setup('achievement')
-  __build.entity = generic_setup('entity')
-  __build.equipment = generic_setup('equipment')
-  __build.fluid = generic_setup('fluid')
-  __build.item = generic_setup('item')
-  __build.recipe = generic_setup('recipe')
-  __build.technology = generic_setup('technology')
-  __build.tile = generic_setup('tile')
-  return __build
-end
--- translate encyclopedia data for the player
-dictionary.player_setup_function = function(player, build_data)
-  for category,t in pairs(build_data) do
-    dictionary.build(player, category, t.names, t.iteration,
-      function(e, name) -- translation function
-        return string.lower(e.result), {name}
-      end,
-      function(e, name, cur_value) -- conflict function
-        table.insert(cur_value, name)
-        return cur_value
-      end
-    )
-  end
-end
-
-function data.build_encyclopedia()
-  
+  build.achievement = generic_setup('achievement')
+  build.entity = generic_setup('entity')
+  build.equipment = generic_setup('equipment')
+  build.fluid = generic_setup('fluid')
+  build.item = generic_setup('item')
+  build.recipe = generic_setup('recipe')
+  build.technology = generic_setup('technology')
+  build.tile = generic_setup('tile')
+  global.__build = build
 end
 
 return data
