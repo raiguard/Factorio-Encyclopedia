@@ -10,6 +10,7 @@ local util = require('__core__/lualib/util')
 
 -- locals
 local string_gsub = string.gsub
+local string_lower = string.lower
 local math_floor = math.floor
 
 -- -----------------------------------------------------------------------------
@@ -22,6 +23,7 @@ translation.finish_event = event.generate_id('translation_finish')
 -- basically just spits out the table in string form
 local function serialise_localised_string(t)
   local output = '{'
+  if type(t) == 'string' then return t end
   for _,v in pairs(t) do
     if type(v) == 'table' then
       output = output..serialise_localised_string(v)
@@ -65,6 +67,9 @@ local function sort_translated_string(e)
     if value then
       if e.translated then
         local result = t.result[e.result]
+        if t.convert_to_lowercase then
+          e.result = string_lower(e.result)
+        end
         if result then
           result[#result+1] = value
         else
@@ -90,11 +95,14 @@ end
 translation.serialise_localised_string = serialise_localised_string
 
 -- begin translating strings
-function translation.start(player, dictionary_name, data, strings)
+function translation.start(player, dictionary_name, data, strings, options)
+  options = options or {}
   local __translation = global.__translation
   if not __translation.players[player.index] then __translation.players[player.index] = {} end
   local player_translation = __translation.players[player.index]
-  if player_translation[dictionary_name] then error('Already translating dictionary: '..dictionary_name) end
+  if not options.ignore_error and player_translation[dictionary_name] then
+    error('Already translating dictionary: '..dictionary_name)
+  end
   player_translation[dictionary_name] = {
     -- tables
     data = table.deepcopy(data), -- this table gets destroyed as it is translated, so deepcopy it
@@ -104,6 +112,8 @@ function translation.start(player, dictionary_name, data, strings)
     player = player,
     request_translation = player.request_translation,
     strings_len = #strings,
+    -- settings
+    convert_to_lowercase = options.convert_to_lowercase,
     -- output
     result = {}
   }
