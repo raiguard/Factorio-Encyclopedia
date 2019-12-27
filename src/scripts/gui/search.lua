@@ -4,7 +4,6 @@
 -- dependencies
 local event = require('lualib/event')
 local mod_gui = require('mod-gui')
-local util = require('lualib/util')
 
 -- modules
 local search_data = require('scripts/data/search')

@@ -8,7 +8,6 @@ pcall(require,'__debugadapter__/debugadapter.lua')
 local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 local translation = require('lualib/translation')
-local util = require('lualib/util')
 
 local serialise_localised_string = translation.serialise_localised_string
 
@@ -57,7 +56,6 @@ local function translate_whole(player)
 end
 
 local function translate_for_all_players()
-  global.results = {}
   for _,player in ipairs(game.connected_players) do
     translate_whole(player)
   end
@@ -95,7 +93,6 @@ end)
 
 event.on_configuration_changed(function()
   global.encyclopedia = nil
-  -- TODO: close all GUIs
   build_translation_data()
   translate_for_all_players()
 end)
@@ -105,6 +102,7 @@ event.on_player_created(function(e)
 end)
 
 event.on_player_joined_game(function(e)
+  -- TODO: close open GUIs
   translate_whole(game.get_player(e.player_index))
 end)
 

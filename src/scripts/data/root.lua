@@ -5,7 +5,6 @@
 -- dependencies
 local dictionary = require('lualib/dictionary')
 local event = require('lualib/event')
-local util = require('lualib/util')
 
 -- library
 local data = {}
