@@ -15,36 +15,32 @@ local serialise_localised_string = translation.serialise_localised_string
 -- local data = require('scripts/data/root')
 local search_gui = require('scripts/gui/search')
 
--- INSPECT GLOBAL (DEBUG ADAPTER)
-event.register('debug-inspect-global', function(e)
-  local breakpoint -- set a breakpoint here. inspect global by hitting Control + Shift + Enter!
-end)
-
 -- -----------------------------------------------------------------------------
 -- ENCYCLOPEDIA DATA
 
 -- builds translation data
 local function build_translation_data()
-  local translation_data = {}
   local function generic_setup(key)
-    local data = {}
-    local strings = {}
-    local strings_len = 0
+    local encyclopedia_data = {}
+    local translation_data = {}
+    local translation_strings = {}
+    local translation_strings_len = 0
     for name,prototype in pairs(game[key..'_prototypes']) do
-      data[serialise_localised_string(prototype.localised_name)] = name
-      strings_len = strings_len + 1
-      strings[strings_len] = prototype.localised_name
+      -- encyclopedia data
+      encyclopedia_data[name] = prototype
+      -- translation data
+      translation_data[serialise_localised_string(prototype.localised_name)] = name
+      translation_strings_len = translation_strings_len + 1
+      translation_strings[translation_strings_len] = prototype.localised_name
     end
-    return {data=data, strings=strings}
+    return encyclopedia_data, {data=translation_data, strings=translation_strings}
   end
-  translation_data.achievement = generic_setup('achievement')
-  translation_data.entity = generic_setup('entity')
-  translation_data.equipment = generic_setup('equipment')
-  translation_data.fluid = generic_setup('fluid')
-  translation_data.item = generic_setup('item')
-  translation_data.recipe = generic_setup('recipe')
-  translation_data.technology = generic_setup('technology')
-  translation_data.tile = generic_setup('tile')
+  local translation_data = {}
+  local encyclopedia_data = {}
+  for _,type in ipairs{'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'} do
+    encyclopedia_data[type], translation_data[type] = generic_setup(type)
+  end
+  global.encyclopedia = encyclopedia_data
   global.__translation.translation_data = translation_data
 end
 
@@ -129,3 +125,10 @@ end)
 event.on_gui_click(function(e)
   search_gui.toggle(game.get_player(e.player_index))
 end, {gui_filters='fe_mod_gui_button'})
+
+-- DEBUGGING
+if __DebugAdapter then
+  event.register('DEBUG-INSPECT-GLOBAL', function(e)
+    local breakpoint -- put breakpoint here to inspect global at any time
+  end)
+end

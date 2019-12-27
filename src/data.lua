@@ -4,11 +4,6 @@
 data:extend{
   {
     type = 'custom-input',
-    name = 'debug-inspect-global',
-    key_sequence = 'CONTROL + SHIFT + ENTER'
-  },
-  {
-    type = 'custom-input',
     name = 'fe-search',
     key_sequence = 'CONTROL + E'
   }
@@ -16,3 +11,14 @@ data:extend{
 
 require('prototypes/sprite')
 require('prototypes/style')
+
+-- DEBUGGING TOOL
+if mods['debugadapter'] then
+  data:extend{
+    {
+      type = 'custom-input',
+      name = 'DEBUG-INSPECT-GLOBAL',
+      key_sequence = 'CONTROL + SHIFT + ENTER'
+    }
+  }
+end
