@@ -66,7 +66,7 @@ function modal_dialog.create(player, parent, category, name, action_type)
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
-               caption={'gui-modal.titlebar-label-caption-'..action_type, global.encyclopedia.items[name].prototype.localised_name}}.style.left_padding = 7
+               caption={'fe-gui-modal.titlebar-label-caption-'..action_type, global.encyclopedia.items[name].prototype.localised_name}}.style.left_padding = 7
   local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
   pusher.drag_target = window
   pusher.style.horizontally_stretchable = true

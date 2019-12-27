@@ -69,7 +69,7 @@ local function setup_player(player)
     search = {}
   }
   local button = mod_gui.get_button_flow(player).add{type='button', name='fe_mod_gui_button', style=mod_gui.button_style,
-                                                     caption={'gui-general.mod-gui-button-caption'}}
+                                                     caption={'fe-gui-general.mod-gui-button-caption'}}
   global.players[player.index].gui.mod_gui = {top_button=button}
 end
 
@@ -115,6 +115,10 @@ event.register(translation.finish_event, function(e)
   player_table.search[e.dictionary_name] = e.dictionary
   if table_size(player_table.search) == 8 then
     player_table.flags.allow_open_gui = true
+    if player_table.flags.tried_to_open_gui then
+      player_table.flags.tried_to_open_gui = nil
+      game.get_player(e.player_index).print{'fe-chat-message.translation-finished'}
+    end
   end
 end)
 

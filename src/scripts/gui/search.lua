@@ -82,12 +82,12 @@ local function create_base_gui(player, mod_frame_flow)
   local window = frame_flow.add{type='frame', name='fe_search_window', style='dialog_frame', direction='vertical'}
   -- titlebar
   local titlebar = window.add{type='flow', name='fe_search_titlebar_flow', style='fe_titlebar_flow'}
-  titlebar.add{type='label', name='fe_search_titlebar_label', style='frame_title', caption={'gui-search.window-label-caption'}}
+  titlebar.add{type='label', name='fe_search_titlebar_label', style='frame_title', caption={'fe-gui-search.window-label-caption'}}
   -- toolbar
   local content_pane = window.add{type='frame', name='fe_search_content_pane', style='fe_search_content_pane', direction='horizontal'}
   local category_bar = content_pane.add{type='frame', name='fe_search_category_bar', style='fe_toolbar_left', direction='vertical'}
   for name,_ in pairs(gui_defs) do
-    category_bar.add{type='button', name='fe_category_button_'..name, style='tool_button', caption={'gui-search.category-button-caption-'..name}}
+    category_bar.add{type='button', name='fe_category_button_'..name, style='tool_button', caption={'fe-gui-search.category-button-caption-'..name}}
   end
   local search_pane = content_pane.add{type='frame', name='fe_search_dialog_pane', style='fe_search_dialog_pane', direction='vertical'}
   event.on_gui_click(category_button_clicked, {name='category_button_clicked', player_index=player.index, gui_filters='fe_category_button_'})
@@ -137,7 +137,8 @@ function search_gui.toggle(player, category)
                            gui_filters='fe_search_textfield'})
     global.players[player.index].gui.search = gui_data
   else
-    player.print('Cannot open encyclopedia until search dictionary has been translated!')
+    player.print{'fe-chat-message.translation-not-finished'}
+    global.players[player.index].flags.tried_to_open_gui = true
   end
 end
 
