@@ -94,6 +94,31 @@ styles.fe_search_dialog_pane = {
   vertically_stretchable = 'on'
 }
 
+styles.fe_search_results_pane = {
+  type = 'frame_style',
+  margin = 4,
+  padding = 0,
+  graphical_set = { -- inset from a light frame, but keep the dark background
+    base = {
+      position = {85,0},
+      corner_size = 8,
+      draw_type = 'outer',
+      center = {position={42,8}, size=1}
+    },
+    shadow = default_inner_shadow
+  },
+  background_graphical_set = { -- rubber grid
+    position = {282,17},
+    corner_size = 8,
+    overall_tiling_vertical_size = 20,
+    overall_tiling_vertical_spacing = 8,
+    overall_tiling_vertical_padding = 4,
+    overall_tiling_horizontal_padding = 4
+  },
+  vertically_stretchable = 'on',
+  horizontally_stretchable = 'on'
+}
+
 -- -----------------------------------------------------------------------------
 -- FLOW STYLES
 
@@ -116,14 +141,12 @@ styles.fe_vertically_centered_flow = {
 styles.fe_search_results_listbox = {
   type = 'list_box_style',
   parent = 'list_box',
-  margin = 4,
-  scroll_pane_style = {
+  scroll_pane_style = { -- invisible scroll pane
     type = 'scroll_pane_style',
     parent = 'list_box_scroll_pane',
-    graphical_set = { -- light frame instead of a dark frame
-      base = {position = {85, 0}, corner_size = 8, draw_type = "outer"},
-      shadow = default_inner_shadow
-    }
+    graphical_set = {},
+    background_graphical_set = {},
+    vertically_stretchable = 'on'
   },
   item_style = {
     type = 'button_style',

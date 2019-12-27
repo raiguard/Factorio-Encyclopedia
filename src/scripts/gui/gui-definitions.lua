@@ -11,6 +11,18 @@ return {
       'view_prototype'
     }
   },
+  equipment = {
+    choose_elem_button = 'equipment',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  fluid = {
+    choose_elem_button = 'fluid',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
   item = {
     choose_elem_button = 'item',
     action_buttons = {
@@ -19,8 +31,20 @@ return {
       'as_recipe_product'
     }
   },
+  recipe = {
+    choose_elem_button = 'recipe',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
   technology = {
     choose_elem_button = 'technology',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  tile = {
+    choose_elem_button = 'tile',
     action_buttons = {
       'view_prototype'
     }

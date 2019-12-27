@@ -29,21 +29,53 @@ local function category_button_clicked(e)
   search_gui.refresh_search_pane(game.get_player(e.player_index), gui_data)
 end
 
-local function search_elem_changed(e)
-  local gui_data = global.players[e.player_index].gui.search
-  gui_data.search_elems.textfield.text = e.element.elem_value or ''
-end
-
 local function search_textfield_text_changed(e)
-  -- update results in listbox
   local player = game.get_player(e.player_index)
-  local gui_data = global.players[e.player_index].gui
+  local player_table = global.players[e.player_index]
+  local gui_data = player_table.gui.search
+  local results_listbox = gui_data.search_elems.results_listbox
   local query = string.lower(e.element.text)
-
+  local search_table = player_table.search[gui_data.category]
+  -- override all if it's empty
+  if e.element.text == '' then
+    results_listbox.clear_items()
+    return
+  end
+  -- perform search
+  local items = {}
+  local items_len = 0
+  for localised,internal in pairs(search_table) do
+    if localised:match(query) then
+      for i=1,#internal do
+        items_len = items_len + 1
+        items[items_len] = '[img='..gui_data.category..'/'..internal[i]..']  '..localised
+      end
+    end
+  end
+  local breakpoint
+  results_listbox.items = items
 end
 
 local function search_textfield_confirmed(e)
+  
+end
 
+local function search_elem_changed(e)
+  local player_table = global.players[e.player_index]
+  local gui_data = player_table.gui.search
+  local search_textfield = gui_data.search_elems.textfield
+  local encyclopedia = global.encyclopedia[gui_data.category]
+  if e.element.elem_value then
+    local entry = encyclopedia[e.element.elem_value]
+    if entry then
+      search_textfield.text = entry.translated_name
+    else
+      error('\''..e.element.elem_value..'\' not found in '..gui_data.category..' encyclopedia')
+    end
+    -- TODO: show action buttons
+  else
+    search_textfield.text = ''
+  end
 end
 
 local function action_button_clicked(e)
@@ -64,9 +96,9 @@ end
 
 local handlers = {
   category_button_clicked = category_button_clicked,
-  search_elem_changed = search_elem_changed,
   search_textfield_text_changed = search_textfield_text_changed,
   search_textfield_confirmed = search_textfield_confirmed,
+  search_elem_changed = search_elem_changed,
   action_button_clicked = action_button_clicked
 }
 
@@ -97,13 +129,17 @@ end
 local function create_search_pane(parent, player, gui_defs)
   local elems = {}
   local top_flow = parent.add{type='flow', name='fe_search_top_flow', style='fe_vertically_centered_flow', direction='horizontal'}
+  top_flow.style.top_margin = 4
+  top_flow.style.left_margin = 3
   if gui_defs.choose_elem_button then
     elems.choose_elem_button = top_flow.add{type='choose-elem-button', name='fe_search_choose_elem_button', style='quick_bar_slot_button',
                                             elem_type=gui_defs.choose_elem_button}
+    elems.choose_elem_button.style.right_margin = 2
   end
   elems.textfield = top_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', lose_focus_on_confirm=true,
                                         clear_and_focus_on_right_click=true}
-  elems.results_listbox = parent.add{type='list-box', name='fe_search_results_listbox', style='fe_search_results_listbox'}
+  elems.results_pane = parent.add{type='frame', name='fe_search_results_pane', style='fe_search_results_pane'}
+  elems.results_listbox = elems.results_pane.add{type='list-box', name='fe_search_results_listbox', style='fe_search_results_listbox'}
   return elems
 end
 
@@ -135,6 +171,7 @@ function search_gui.toggle(player, category)
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                            gui_filters='fe_search_textfield'})
+    gui_data.state = 'search'
     global.players[player.index].gui.search = gui_data
   else
     player.print{'fe-chat-message.translation-not-finished'}

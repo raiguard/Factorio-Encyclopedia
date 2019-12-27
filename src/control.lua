@@ -27,7 +27,7 @@ local function build_translation_data()
     local translation_strings_len = 0
     for name,prototype in pairs(game[key..'_prototypes']) do
       -- encyclopedia data
-      encyclopedia_data[name] = prototype
+      encyclopedia_data[name] = {prototype=prototype}
       -- translation data
       translation_data[serialise_localised_string(prototype.localised_name)] = name
       translation_strings_len = translation_strings_len + 1
@@ -47,7 +47,7 @@ end
 local function translate_whole(player)
   -- global.players[player.index].search = nil -- remove table to prevent opening the GUI while translating
   for name,t in pairs(global.__translation.translation_data) do
-    translation.start(player, name, t.data, t.strings)
+    translation.start(player, name, t.data, t.strings, {convert_to_lowercase=true})
   end
 end
 
@@ -113,6 +113,12 @@ end)
 event.register(translation.finish_event, function(e)
   local player_table = global.players[e.player_index]
   player_table.search[e.dictionary_name] = e.dictionary
+  local encyclopedia = global.encyclopedia[e.dictionary_name]
+  for localised,internal in pairs(e.dictionary) do
+    for i=1,#internal do
+      encyclopedia[internal[i]].translated_name = localised
+    end
+  end
   if table_size(player_table.search) == 8 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
