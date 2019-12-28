@@ -17,16 +17,75 @@ local search_gui = require('scripts/gui/search')
 -- -----------------------------------------------------------------------------
 -- ENCYCLOPEDIA DATA
 
--- builds translation data
-local function build_translation_data()
-  local function generic_setup(key)
+local build_functions = {
+  recipe = {
+    setup = function()
+      local crafting_machines = game.get_filtered_entity_prototypes{
+        {filter='type', type='assembling-machine'},
+        {filter='type', type='furnace'}
+      }
+      local output = {}
+      for name,prototype in pairs(crafting_machines) do
+        output[name] = prototype.crafting_categories
+      end
+      return {crafting_machines=output}
+    end,
+    iteration = function(name, prototype, iteration_data, encyclopedia)
+      -- made in
+      local category = prototype.category
+      local made_in = {}
+      for name,categories in pairs(iteration_data.crafting_machines) do
+        if categories[category] then
+          made_in[#made_in+1] = name
+        end
+      end
+      -- ingredients
+      local ingredients = prototype.ingredients
+      for i=1,#ingredients do
+        local ingredient = ingredients[i]
+        local entry = encyclopedia[ingredient.type][ingredient.name]
+        if entry then
+          if not entry.as_ingredient then entry.as_ingredient = {} end
+          entry.as_ingredient[#entry.as_ingredient+1] = name
+        end
+      end
+      -- products
+      local products = prototype.products
+      for i=1,#products do
+        local product = products[i]
+        local entry = encyclopedia[product.type][product.name]
+        if entry then
+          if not entry.as_product then entry.as_product = {} end
+          entry.as_product[#entry.as_product+1] = name
+        end
+      end
+      return {made_in=made_in, prototype=prototype}
+    end
+  }
+}
+
+-- builds encyclopedia data
+local function build_encyclopedia()
+  global.encyclopedia = {}
+  local encyclopedia = global.encyclopedia
+  local function setup(key)
     local encyclopedia_data = {}
     local translation_data = {}
     local translation_strings = {}
     local translation_strings_len = 0
+    local iteration_data
+    if build_functions[key] and build_functions[key].setup then
+      iteration_data = build_functions[key].setup()
+    end
+    local iteration_function
+    if build_functions[key] and build_functions[key].iteration then
+      iteration_function = build_functions[key].iteration
+    else
+      iteration_function = function(name, prototype, iteration_data, encyclopedia) return {prototype=prototype} end
+    end
     for name,prototype in pairs(game[key..'_prototypes']) do
       -- encyclopedia data
-      encyclopedia_data[name] = {prototype=prototype}
+      encyclopedia_data[name] = iteration_function(name, prototype, iteration_data, encyclopedia)
       -- translation data
       translation_data[serialise_localised_string(prototype.localised_name)] = name
       translation_strings_len = translation_strings_len + 1
@@ -35,16 +94,13 @@ local function build_translation_data()
     return encyclopedia_data, {data=translation_data, strings=translation_strings}
   end
   local translation_data = {}
-  local encyclopedia_data = {}
   for _,type in ipairs{'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'} do
-    encyclopedia_data[type], translation_data[type] = generic_setup(type)
+    encyclopedia[type], translation_data[type] = setup(type)
   end
-  global.encyclopedia = encyclopedia_data
   global.__translation.translation_data = translation_data
 end
 
 local function translate_whole(player, ignore_error)
-  -- global.players[player.index].search = nil -- remove table to prevent opening the GUI while translating
   for name,t in pairs(global.__translation.translation_data) do
     translation.start(player, name, t.data, t.strings, {convert_to_lowercase=true, ignore_error=ignore_error})
   end
@@ -77,7 +133,7 @@ event.on_init(function()
   for _,player in pairs(game.players) do
     setup_player(player)
   end
-  build_translation_data()
+  build_encyclopedia()
   translate_for_all_players()
   event.register(translation.retranslate_all_event, translate_for_all_players)
 end)
@@ -88,7 +144,7 @@ end)
 
 event.on_configuration_changed(function()
   global.encyclopedia = nil
-  build_translation_data()
+  build_encyclopedia()
   translate_for_all_players(true)
 end)
 
