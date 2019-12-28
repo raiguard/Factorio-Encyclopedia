@@ -298,9 +298,13 @@ end)
 
 local function create_base_gui(player)
   local window = player.gui.screen.add{type='frame', name='fe_search_window', style='dialog_frame', direction='vertical'}
+  window.enabled = false
   -- titlebar
-  local titlebar = window.add{type='flow', name='fe_search_titlebar_flow', style='fe_titlebar_flow'}
-  titlebar.add{type='label', name='fe_search_titlebar_label', style='frame_title', caption={'fe-gui-search.window-label-caption'}}
+  local titlebar = window.add{type='flow', name='fe_titlebar_flow', style='fe_titlebar_flow'}
+  titlebar.add{type='label', name='fe_titlebar_label', style='frame_title', caption={'fe-gui-search.window-label-caption'}}
+  titlebar.add{type='empty-widget', name='fe_pusher', style='fe_titlebar_draggable_space'}.drag_target = window
+  local close_button = titlebar.add{type='sprite-button', name='fe_titlebar_close_button', style='close_button', sprite='utility/close_white',
+                                    hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
   -- toolbar
   local content_pane = window.add{type='frame', name='fe_search_content_pane', style='fe_search_content_pane', direction='horizontal'}
   local category_bar = content_pane.add{type='frame', name='fe_search_category_bar', style='fe_toolbar_left', direction='vertical'}
@@ -310,7 +314,7 @@ local function create_base_gui(player)
   end
   local search_pane = content_pane.add{type='frame', name='fe_search_dialog_pane', style='fe_search_dialog_pane', direction='vertical'}
   event.on_gui_click(category_button_clicked, {name='search_category_button_clicked', player_index=player.index, gui_filters='fe_category_button_'})
-  return {window=window, category_bar=category_bar, search_pane=search_pane}
+  return {window=window, close_button=close_button, category_bar=category_bar, search_pane=search_pane}
 end
 
 local function create_search_pane(parent, player, gui_defs)
@@ -362,7 +366,8 @@ function self.create(player, use_keyboard_nav, category, name)
                           gui_filters='fe_search_textfield'})
     event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed',
                                         player_index=player.index, gui_filters='fe_search_results_listbox'})
-    event.on_gui_closed(search_gui_closed, {name='search_gui_closed', player_index=player.index, gui_filters=gui_data.base_elems.window})
+    event.register({defines.events.on_gui_click, defines.events.on_gui_closed}, search_gui_closed, {name='search_gui_closed', player_index=player.index,
+                   gui_filters={gui_data.base_elems.window, gui_data.base_elems.close_button}})
     gui_data.search_query = ''
     if use_keyboard_nav then
       -- register keyboard shortcuts
@@ -407,8 +412,7 @@ end
 
 -- toggle search GUI
 function self.toggle(player, use_keyboard_nav, category, name)
-  local screen = player.gui.screen
-  if screen.fe_search_window then
+  if player.gui.screen.fe_search_window then
     self.destroy(player)
   else
     self.create(player, use_keyboard_nav, category, name)

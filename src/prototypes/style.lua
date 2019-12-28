@@ -100,6 +100,15 @@ styles.fe_invisible_vertical_pusher = {
   vertically_stretchable = 'on'
 }
 
+styles.fe_titlebar_draggable_space = {
+  type = 'empty_widget_style',
+  parent = 'draggable_space_header',
+  horizontally_stretchable = 'on',
+  natural_height = 24,
+  minimal_width = 24,
+  right_margin = 7
+}
+
 -- -----------------------------------------------------------------------------
 -- FRAME STYLES
 

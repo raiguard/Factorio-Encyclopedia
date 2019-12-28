@@ -74,17 +74,12 @@ function modal_dialog.create(player, category, name, action)
   -- titlebar
   local titlebar = window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_backward', style='close_button', sprite='fe_nav_backward',
-               hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}.enabled = false
+               hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}.enabled = false
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
                caption={'fe-gui-modal.titlebar-label-caption-'..action, encyclopedia[category][name].prototype.localised_name}}.style.left_padding = 7
-  local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
-  pusher.drag_target = window
-  pusher.style.horizontally_stretchable = true
-  pusher.style.natural_height = 24
-  pusher.style.minimal_width = 24
-  pusher.style.right_margin = 7
+  titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='fe_titlebar_draggable_space'}.drag_target = window
   local search_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_search', style='close_button', sprite='fe_search',
                                      hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark', tooltip={'fe-gui-modal.titlebar-search-button-tooltip'}}
   local close_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_close', style='close_button', sprite='utility/close_white',
