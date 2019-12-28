@@ -53,6 +53,7 @@ local gui_defs = {
   recipe = {
     choose_elem_button = 'recipe',
     action_buttons = {
+      'view_recipe',
       'view_prototype'
     }
   },
