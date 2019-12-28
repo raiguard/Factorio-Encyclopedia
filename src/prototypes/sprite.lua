@@ -32,3 +32,16 @@ data:extend{
     flags = {'icon'}
   }
 }
+
+for _,category in ipairs{'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'} do
+  data:extend{
+    {
+      type = 'sprite',
+      name = 'fe_category_'..category,
+      filename = '__Encyclopedia__/graphics/gui/search-category/'..category..'.png',
+      size = 32,
+      mipmap_count = 2,
+      flags = {'icon'}
+    }
+  }
+end

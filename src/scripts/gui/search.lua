@@ -236,8 +236,9 @@ local function create_base_gui(player, mod_frame_flow)
   -- toolbar
   local content_pane = window.add{type='frame', name='fe_search_content_pane', style='fe_search_content_pane', direction='horizontal'}
   local category_bar = content_pane.add{type='frame', name='fe_search_category_bar', style='fe_toolbar_left', direction='vertical'}
-  for name,_ in pairs(gui_defs) do
-    category_bar.add{type='button', name='fe_category_button_'..name, style='tool_button', caption={'fe-gui-search.category-button-caption-'..name}}
+  for category,_ in pairs(gui_defs) do
+    category_bar.add{type='sprite-button', name='fe_category_button_'..category, style='tool_button',
+                     sprite='fe_category_'..category, tooltip={'fe-gui-search.category-button-caption-'..category}}
   end
   local search_pane = content_pane.add{type='frame', name='fe_search_dialog_pane', style='fe_search_dialog_pane', direction='vertical'}
   event.on_gui_click(category_button_clicked, {name='search_category_button_clicked', player_index=player.index, gui_filters='fe_category_button_'})
