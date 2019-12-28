@@ -100,10 +100,18 @@ function event.register(id, handler, options)
     if not con_registry then
       global.conditional_event_registry[name] = {id=id, players={player_index}, gui_filters=filters}
     elseif player_index then
+      -- check to be sure we haven't registered this player already
+      for i,pi in ipairs(con_registry.players) do
+        if pi == player_index then
+          -- we already registered for this player, skip conditional registration
+          goto continue
+        end
+      end
       table.insert(con_registry.players, player_index)
       return event -- don't do anything else
     end
   end
+  ::continue::
   -- register handler
   if type(id) ~= 'table' then id = {id} end
   for _,n in pairs(id) do
@@ -125,7 +133,7 @@ function event.register(id, handler, options)
     -- make sure the handler has not already been registered
     for i,t in ipairs(registry) do
       -- if it is a conditional event,
-      if t.handler == handler and not name then
+      if t.handler == handler then
         -- remove handler for re-insertion at the bottom
         log('Re-registering existing event ID, moving to bottom')
         table.remove(registry, i)
