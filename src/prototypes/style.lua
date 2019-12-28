@@ -183,13 +183,25 @@ styles.fe_search_results_listbox_pane = {
   margin = 4
 }
 
-styles.fe_recipe_items_listbox_pane = {
+styles.fe_recipe_listbox_pane = {
   type = 'frame_style',
   parent = 'fe_light_listbox_pane',
   minimal_width = 225,
-  minimal_height = 140,
-  maximal_height = 280,
-  vertically_stretchable = nil
+  height = 280
+}
+
+styles.fe_window_content_frame = {
+  type = 'frame_style',
+  parent = 'window_content_frame',
+  padding = 8,
+  horizontal_flow_style = {
+    type = 'horizontal_flow_style',
+    horizontal_spacing = 8
+  },
+  vertical_flow_style = {
+    type = 'vertical_flow_style',
+    vertical_spacing = 8
+  }
 }
 
 -- -----------------------------------------------------------------------------
@@ -211,7 +223,7 @@ styles.fe_vertically_centered_flow = {
 -- -----------------------------------------------------------------------------
 -- IMAGE STYLES
 
-styles.fe_recipe_as_icon = {
+styles.fe_recipe_icon = {
   type = 'image_style',
   stretch_image_to_widget_size = true,
   size = 28,

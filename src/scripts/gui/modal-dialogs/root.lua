@@ -6,7 +6,7 @@ local event = require('lualib/event')
 
 -- modules
 local content_modules = {}
-for _,name in ipairs{'prototype', 'recipe'} do
+for _,name in ipairs{'recipe-usage', 'prototype', 'recipe'} do
   content_modules[name] = require('scripts/gui/modal-dialogs/'..name)
 end
 
@@ -17,13 +17,11 @@ local modal_dialog = {}
 
 local action_to_content = {
   fluid = {
-    as_recipe_ingredient = function(name) return {name='recipe', data={as={category='fluid', name=name, type='ingredient'}}} end,
-    as_recipe_product = function(name) return {name='recipe', data={as={category='fluid', name=name, type='product'}}} end,
+    recipe_usage = {name='recipe-usage', data={type='fluid'}},
     view_prototype = {name='prototype', data='LuaItemPrototype'}
   },
   item = {
-    as_recipe_ingredient = function(name) return {name='recipe', data={as={category='item', name=name, type='ingredient'}}} end,
-    as_recipe_product = function(name) return {name='recipe', data={as={category='item', name=name, type='product'}}} end,
+    recipe_usage = {name='recipe-usage', data={type='item'}},
     view_prototype = {name='prototype', data='LuaItemPrototype'}
   },
   recipe = {
@@ -61,15 +59,19 @@ end)
 -- LIBRARY
 
 function modal_dialog.create(player, category, name, action)
+  -- destroy existing dialog, if there is one
+  if global.players[player.index].gui.modal then
+    modal_dialog.destroy(global.players[player.index].gui.modal, player.index)
+  end
   local encyclopedia = global.encyclopedia
   local window = player.gui.screen.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
   window.enabled = false
   -- titlebar
   local titlebar = window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_backward', style='close_button', sprite='fe_nav_backward',
-               hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
+               hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}.enabled = false
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
-               hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
+               hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}.enabled = false
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
                caption={'fe-gui-modal.titlebar-label-caption-'..action, encyclopedia[category][name].prototype.localised_name}}.style.left_padding = 7
   local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
