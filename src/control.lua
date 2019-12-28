@@ -12,7 +12,6 @@ local translation = require('lualib/translation')
 local serialise_localised_string = translation.serialise_localised_string
 
 -- modules
--- local data = require('scripts/data/root')
 local search_gui = require('scripts/gui/search')
 
 -- -----------------------------------------------------------------------------

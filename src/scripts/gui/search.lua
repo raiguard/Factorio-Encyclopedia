@@ -6,29 +6,11 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 
 -- modules
-local search_data = require('scripts/data/search')
 local gui_defs = require('scripts/gui/gui-definitions')
 local modal_dialog = require('scripts/gui/modal-dialogs/root')
 
 -- library
 local search_gui = {}
-
--- -----------------------------------------------------------------------------
--- LOCAL UTILITIES
-
-local function create_action_buttons(gui_data)
-  -- create buttons
-  local actions_scroll = gui_data.search_elems.actions_scrollpane
-  actions_scroll.clear()
-  for _,action in ipairs(gui_defs[gui_data.category].action_buttons) do
-    actions_scroll.add{type='button', name='fe_search_action_button_'..action, caption={'fe-gui-search.action-button-caption-'..action}}
-    .style.horizontally_stretchable = true
-  end
-  -- update GUI state
-  gui_data.state = 'choose_action'
-  gui_data.search_elems.results_pane.visible = false
-  actions_scroll.visible = true
-end
 
 -- -----------------------------------------------------------------------------
 -- EVENT HANDLERS
@@ -60,8 +42,10 @@ local function search_elem_changed(e)
     else
       error('\''..e.element.elem_value..'\' not found in '..gui_data.category..' encyclopedia')
     end
-    -- create action buttons
-    create_action_buttons(gui_data)
+    -- update GUI state
+    gui_data.state = 'choose_action'
+    gui_data.search_elems.results_pane.visible = false
+    gui_data.search_elems.actions_scrollpane.visible = true
   else
     search_textfield.text = ''
     if gui_data.state == 'choose_action' then
@@ -123,7 +107,11 @@ local function results_listbox_selection_state_changed(e)
   local gui_data = global.players[e.player_index].gui.search
   gui_data.search_elems.choose_elem_button.elem_value = internal
   gui_data.search_elems.textfield.text = localised
-  create_action_buttons(gui_data)
+  e.element.selected_index = 0
+  -- update GUI state
+  gui_data.state = 'choose_action'
+  gui_data.search_elems.results_pane.visible = false
+  gui_data.search_elems.actions_scrollpane.visible = true
 end
 
 local function category_button_clicked(e)
@@ -190,6 +178,10 @@ local function create_search_pane(parent, player, gui_defs)
   elems.actions_scrollpane.style.margin = 4
   elems.actions_scrollpane.style.vertically_stretchable = true
   elems.actions_scrollpane.visible = false
+  for _,action in ipairs(gui_defs.action_buttons) do
+    elems.actions_scrollpane.add{type='button', name='fe_search_action_button_'..action, caption={'fe-gui-search.action-button-caption-'..action}}
+    .style.horizontally_stretchable = true
+  end
   return elems
 end
 
@@ -225,6 +217,7 @@ function search_gui.toggle(player, category)
     event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed'})
     gui_data.state = 'search'
     gui_data.search_query = ''
+    gui_data.search_elems.textfield.focus()
     global.players[player.index].gui.search = gui_data
   else
     player.print{'fe-chat-message.translation-not-finished'}
