@@ -128,7 +128,7 @@ event.register(translation.finish_event, function(e)
 end)
 
 event.register('fe-search', function(e)
-  search_gui.toggle(game.get_player(e.player_index))
+  search_gui.toggle(game.get_player(e.player_index), true)
 end)
 
 event.on_gui_click(function(e)

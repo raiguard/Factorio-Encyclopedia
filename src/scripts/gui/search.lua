@@ -46,6 +46,7 @@ local function search_elem_changed(e)
     gui_data.state = 'choose_action'
     gui_data.search_elems.results_pane.visible = false
     gui_data.search_elems.actions_scrollpane.visible = true
+    gui_data.use_keyboard_nav = false
   else
     search_textfield.text = ''
     if gui_data.state == 'choose_action' then
@@ -53,6 +54,9 @@ local function search_elem_changed(e)
       gui_data.search_elems.results_pane.visible = true
       gui_data.search_elems.results_listbox.clear_items()
       gui_data.search_elems.actions_scrollpane.visible = false
+      if gui_data.selected_index then
+        gui_data.search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
+      end
     end
   end
 end
@@ -85,10 +89,6 @@ local function search_textfield_text_changed(e)
   gui_data.search_query = query
 end
 
-local function search_textfield_confirmed(e)
-  -- TODO: keyboard navigation
-end
-
 local function search_textfield_clicked(e)
   local gui_data = global.players[e.player_index].gui.search
   if gui_data.state == 'choose_action' then
@@ -96,6 +96,7 @@ local function search_textfield_clicked(e)
     gui_data.state = 'search'
     gui_data.search_elems.results_pane.visible = true
     gui_data.search_elems.actions_scrollpane.visible = false
+    gui_data.search_elems.results_listbox.selected_index = 0
     e.element.text = gui_data.search_query
     -- update search results
     search_textfield_text_changed{player_index=e.player_index, element=gui_data.search_elems.textfield}
@@ -107,33 +108,116 @@ local function results_listbox_selection_state_changed(e)
   local gui_data = global.players[e.player_index].gui.search
   gui_data.search_elems.choose_elem_button.elem_value = internal
   gui_data.search_elems.textfield.text = localised
-  e.element.selected_index = 0
   -- update GUI state
   gui_data.state = 'choose_action'
   gui_data.search_elems.results_pane.visible = false
   gui_data.search_elems.actions_scrollpane.visible = true
+  if e.used_keyboard then
+    gui_data.selected_index = 1
+    gui_data.search_elems.actions_scrollpane.children[1].style = 'fe_button_selected'
+  else
+    gui_data.use_keyboard_nav = false
+  end
 end
 
 local function category_button_clicked(e)
   local gui_data = global.players[e.player_index].gui.search
   e.element.parent['fe_category_button_'..gui_data.category].style = 'tool_button'
-  e.element.style = 'fe_tool_button_selected'
+  e.element.style = 'fe_tool_button_active'
   gui_data.category = e.element.name:gsub('fe_category_button_', '')
   search_gui.refresh_search_pane(game.get_player(e.player_index), gui_data)
 end
 
--- KEYBINDING HANDLERS
+local function input_nav_dir(e)
+  local gui_data = global.players[e.player_index].gui.search
+  local base_elems = gui_data.base_elems
+  local search_elems = gui_data.search_elems
+  local delta = e.input_name:find('up') and -1 or 1
+  if gui_data.use_keyboard_nav then
+    if gui_data.state == 'choose_category' then
+      local children = base_elems.category_bar.children
+      local selected = children[gui_data.selected_index]
+      if selected.style.name == 'fe_tool_button_active_selected' then
+        selected.style = 'fe_tool_button_active'
+      else
+        selected.style = 'tool_button'
+      end
+      gui_data.selected_index = util.clamp(gui_data.selected_index+delta, 1, #children)
+      selected = children[gui_data.selected_index]
+      if selected.style.name == 'fe_tool_button_active' then
+        selected.style = 'fe_tool_button_active_selected'
+      else
+        selected.style = 'fe_tool_button_selected'
+      end
+    elseif gui_data.state == 'choose_result' then
+      local listbox = search_elems.results_listbox
+      listbox.selected_index = util.clamp(listbox.selected_index+delta, 1, #listbox.items)
+    elseif gui_data.state == 'choose_action' then
+      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
+      gui_data.selected_index = util.clamp(gui_data.selected_index+delta, 1, #search_elems.actions_scrollpane.children)
+      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'fe_button_selected'
+    end
+  end
+end
 
+local function input_nav_confirm(e)
+  local gui_data = global.players[e.player_index].gui.search
+  local search_elems = gui_data.search_elems
+  if gui_data.use_keyboard_nav then
+    if gui_data.state == 'choose_category' then
+      category_button_clicked{player_index=e.player_index, element=gui_data.base_elems.category_bar.children[gui_data.selected_index]}
+    elseif gui_data.state == 'choose_result' then
+      results_listbox_selection_state_changed{player_index=e.player_index, element=search_elems.results_listbox, used_keyboard=true}
+    elseif gui_data.state == 'choose_action' then
+      action_button_clicked{player_index=e.player_index, element=search_elems.actions_scrollpane.children[gui_data.selected_index]}
+    end
+  end
+end
+
+local function input_nav_back(e)
+  local gui_data = global.players[e.player_index].gui.search
+  local search_elems = gui_data.search_elems
+  if gui_data.use_keyboard_nav then
+    if gui_data.state == 'choose_result' then
+      search_elems.textfield.focus()
+      search_elems.results_listbox.selected_index = 0
+      gui_data.state = 'search'
+    elseif gui_data.state == 'choose_action' then
+      search_elems.results_pane.visible = true
+      search_elems.actions_scrollpane.visible = false
+      search_elems.textfield.text = gui_data.search_query
+      search_elems.choose_elem_button.elem_value = nil
+      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
+      gui_data.state = 'choose_result'
+    end
+  end
+end
+
+local function search_textfield_confirmed(e)
+  local gui_data = global.players[e.player_index].gui.search
+  -- set initial index
+  gui_data.search_elems.results_listbox.selected_index = 1
+  -- register keyboard shortcuts
+  event.register({'fe-nav-up', 'fe-nav-down'}, input_nav_dir, {name='search_input_nav_dir', player_index=e.player_index})
+  event.register('fe-nav-confirm', input_nav_confirm, {name='search_input_nav_confirm', player_index=e.player_index})
+  event.register('fe-nav-back', input_nav_back, {name='search_input_nav_back', player_index=e.player_index})
+  -- set GUI state
+  gui_data.state = 'choose_result'
+  gui_data.use_keyboard_nav = true
+end
 
 
 local handlers = {
   search_action_button_clicked = action_button_clicked,
   search_elem_changed = search_elem_changed,
   search_textfield_text_changed = search_textfield_text_changed,
-  search_textfield_confirmed = search_textfield_confirmed,
   search_textfield_clicked = search_textfield_clicked,
   search_results_listbox_selection_state_changed = results_listbox_selection_state_changed,
-  search_category_button_clicked = category_button_clicked
+  search_category_button_clicked = category_button_clicked,
+  search_input_nav_dir = input_nav_dir,
+  search_input_nav_confirm = input_nav_confirm,
+  search_input_nav_back = input_nav_back,
+  search_textfield_confirmed = search_textfield_confirmed,
 }
 
 event.on_load(function()
@@ -186,7 +270,7 @@ local function create_search_pane(parent, player, gui_defs)
 end
 
 -- toggle search GUI
-function search_gui.toggle(player, category)
+function search_gui.toggle(player, use_keyboard_nav, category)
   category = category or 'item'
   local gui_data = {category=category}
   local mod_frame_flow = mod_gui.get_frame_flow(player)
@@ -202,7 +286,7 @@ function search_gui.toggle(player, category)
     -- base window
     gui_data.base_elems = create_base_gui(player, mod_frame_flow)
     -- set active category button
-    gui_data.base_elems.category_bar['fe_category_button_'..category].style = 'fe_tool_button_selected'
+    gui_data.base_elems.category_bar['fe_category_button_'..category].style = 'fe_tool_button_active'
     -- create search pane
     gui_data.search_elems = create_search_pane(gui_data.base_elems.search_pane, player, gui_defs[gui_data.category])
     -- register handlers
@@ -214,10 +298,29 @@ function search_gui.toggle(player, category)
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                            gui_filters='fe_search_textfield'})
-    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed'})
-    gui_data.state = 'search'
+    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed', player_index=player.index})
     gui_data.search_query = ''
-    gui_data.search_elems.textfield.focus()
+    if use_keyboard_nav then
+      -- register keyboard shortcuts
+      event.register({'fe-nav-up', 'fe-nav-down'}, input_nav_dir, {name='search_input_nav_dir', player_index=player.index})
+      event.register('fe-nav-confirm', input_nav_confirm, {name='search_input_nav_confirm', player_index=player.index})
+      event.register('fe-nav-back', input_nav_back, {name='search_input_nav_back', player_index=player.index})
+      -- set flag
+      gui_data.use_keyboard_nav = true
+      gui_data.state = 'choose_category'
+      -- set style
+      for i,element in ipairs(gui_data.base_elems.category_bar.children) do
+        if element.style.name:match('active') then
+          element.style = 'fe_tool_button_active_selected'
+          gui_data.selected_index = i
+          break
+        end
+      end
+    else
+      gui_data.use_keyboard_nav = false
+      gui_data.search_elems.textfield.focus()
+      gui_data.state = 'search'
+    end
     global.players[player.index].gui.search = gui_data
   else
     player.print{'fe-chat-message.translation-not-finished'}
@@ -229,6 +332,9 @@ end
 function search_gui.refresh_search_pane(player, gui_data)
   gui_data.base_elems.search_pane.clear()
   gui_data.search_elems = create_search_pane(gui_data.base_elems.search_pane, player, gui_defs[gui_data.category])
+  gui_data.search_elems.textfield.focus()
+  gui_data.state = 'search'
+  gui_data.search_query = ''
 end
 
 return search_gui

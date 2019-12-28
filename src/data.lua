@@ -5,7 +5,32 @@ data:extend{
   {
     type = 'custom-input',
     name = 'fe-search',
-    key_sequence = 'CONTROL + E'
+    key_sequence = 'CONTROL + E',
+    order = 'a'
+  },
+  {
+    type = 'custom-input',
+    name = 'fe-nav-up',
+    key_sequence = 'UP',
+    order = 'ba'
+  },
+  {
+    type = 'custom-input',
+    name = 'fe-nav-down',
+    key_sequence = 'DOWN',
+    order = 'bb'
+  },
+  {
+    type = 'custom-input',
+    name = 'fe-nav-back',
+    key_sequence = 'LEFT',
+    order = 'bc'
+  },
+  {
+    type = 'custom-input',
+    name = 'fe-nav-confirm',
+    key_sequence = 'ENTER',
+    order = 'bd'
   }
 }
 
