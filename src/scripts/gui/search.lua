@@ -84,7 +84,7 @@ local function action_button_clicked(e)
     modal_dialog.destroy(gui_data, e.player_index)
   end
   -- TODO: create modal dialog
-  game.print('create modal dialog: '..action)
+  gui_data.modal = modal_dialog.create(player, search_gui_data.category, elem_value, action)
 end
 
 local function search_elem_changed(e)
@@ -254,6 +254,12 @@ end
 local function search_textfield_confirmed(e)
   if e.element.text ~= '' then
     local gui_data = global.players[e.player_index].gui.search
+    -- check listbox content
+    if #gui_data.search_elems.results_listbox.items == 0 then
+      -- destroy the search window
+      search_gui.toggle(game.get_player(e.player_index))
+      return
+    end
     -- set initial index
     gui_data.search_elems.results_listbox.selected_index = 1
     -- register keyboard shortcuts
@@ -319,8 +325,8 @@ local function create_search_pane(parent, player, gui_defs)
   end
   elems.textfield = top_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', lose_focus_on_confirm=true,
                                         clear_and_focus_on_right_click=true}
-  elems.results_pane = parent.add{type='frame', name='fe_search_results_pane', style='fe_search_results_pane'}
-  elems.results_listbox = elems.results_pane.add{type='list-box', name='fe_search_results_listbox', style='fe_search_results_listbox'}
+  elems.results_pane = parent.add{type='frame', name='fe_search_results_pane', style='fe_search_results_listbox_pane'}
+  elems.results_listbox = elems.results_pane.add{type='list-box', name='fe_search_results_listbox', style='fe_light_listbox'}
   elems.actions_scrollpane = parent.add{type='scroll-pane', name='fe_search_actions_scroll', style='scroll_pane_light', direction='vertical'}
   elems.actions_scrollpane.style.margin = 4
   elems.actions_scrollpane.style.vertically_stretchable = true
@@ -361,7 +367,8 @@ function search_gui.toggle(player, use_keyboard_nav, category)
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                            gui_filters='fe_search_textfield'})
-    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed', player_index=player.index})
+    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed',
+                                         player_index=player.index, gui_filters='fe_search_results_listbox'})
     gui_data.search_query = ''
     if use_keyboard_nav then
       -- register keyboard shortcuts

@@ -3,11 +3,34 @@
 
 -- dependencies
 local event = require('lualib/event')
-local mod_gui = require('mod-gui')
 
-local lua_object_members = require('scripts/data/lua-object-members')
+-- modules
+local content_modules = {}
+for _,name in ipairs{'prototype', 'recipe'} do
+  content_modules[name] = require('scripts/gui/modal-dialogs/'..name)
+end
 
 local modal_dialog = {}
+
+-- -----------------------------------------------------------------------------
+-- ACTION TO CONTENT TRANSLATION
+
+local action_to_content = {
+  fluid = {
+    as_recipe_ingredient = function(name) return {name='recipe', data={as={category='fluid', name=name, type='ingredient'}}} end,
+    as_recipe_product = function(name) return {name='recipe', data={as={category='fluid', name=name, type='product'}}} end,
+    view_prototype = {name='prototype', data='LuaItemPrototype'}
+  },
+  item = {
+    as_recipe_ingredient = function(name) return {name='recipe', data={as={category='item', name=name, type='ingredient'}}} end,
+    as_recipe_product = function(name) return {name='recipe', data={as={category='item', name=name, type='product'}}} end,
+    view_prototype = {name='prototype', data='LuaItemPrototype'}
+  },
+  recipe = {
+    view_recipe = {name='recipe'},
+    view_prototype = {name='prototype', data='LuaRecipePrototype'}
+  }
+}
 
 -- -----------------------------------------------------------------------------
 -- TITLEBAR EVENT HANDLERS
@@ -37,37 +60,18 @@ end)
 -- -----------------------------------------------------------------------------
 -- LIBRARY
 
-local function recursive_prototype_table(t, parent, subtable_count)
-  subtable_count = subtable_count or 0
-  local table = parent.add{type='table', name='fe_subtable_'..subtable_count, style='bordered_table', column_count=2}
-  table.add{type='label', name='fe_prototype_table_header_label', style='caption_label', caption='key'}
-  table.add{type='label', name='fe_prototype_table_header_value', style='caption_label', caption='value'}
-  for k,v in pairs(t) do
-    table.add{type='label', name='fe_prototype_table_label_'..k, caption=k}
-    local value_type = type(v)
-    if value_type == 'table' then
-      subtable_count = subtable_count + 1
-      recursive_prototype_table(v, table, subtable_count)
-    elseif value_type == 'userdata' then
-      table.add{type='label', name='fe_prototype_table_value_'..k, caption=serpent.line(v)}.style.horizontally_stretchable = true
-    else
-      table.add{type='label', name='fe_prototype_table_value_'..k, caption=v}.style.horizontally_stretchable = true
-    end
-  end
-  return table
-end
-
-function modal_dialog.create(player, parent, category, name, action_type)
-  local encyclopedia = global.encyclopedia[category]
-  local window = parent.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
+function modal_dialog.create(player, category, name, action)
+  local encyclopedia = global.encyclopedia
+  local window = player.gui.screen.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
   window.enabled = false
+  -- titlebar
   local titlebar = window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_backward', style='close_button', sprite='fe_nav_backward',
                hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
-               caption={'fe-gui-modal.titlebar-label-caption-'..action_type, encyclopedia[name].prototype.localised_name}}.style.left_padding = 7
+               caption={'fe-gui-modal.titlebar-label-caption-'..action, encyclopedia[category][name].prototype.localised_name}}.style.left_padding = 7
   local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
   pusher.drag_target = window
   pusher.style.horizontally_stretchable = true
@@ -76,31 +80,28 @@ function modal_dialog.create(player, parent, category, name, action_type)
   pusher.style.right_margin = 7
   local close_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_close', style='close_button', sprite='utility/close_white',
                hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
-  -- HARDCODED PROTOTYPE INFO FOR NOW
-  local content_pane = window.add{type='scroll-pane', name='fe_modal_content_pane', style='fe_prototype_data_scroll_pane'}
-  content_pane.style.maximal_width = 800
-  content_pane.style.maximal_height = 800
-  local prototype = encyclopedia[name].prototype
-  local initial_table = {}
-  for n,_ in pairs(lua_object_members['LuaItemPrototype']) do
-    local v = prototype[n]
-    if v ~= nil then
-      initial_table[n] = v
-    end
+  -- get content module from data
+  local content = action_to_content[category]
+  if not content then error('No content!') end
+  if type(content) == 'function' then
+    content = content(name, encyclopedia)
+  else
+    content = content[action]
   end
-  recursive_prototype_table(initial_table, content_pane)
-  -- END HARDCODED
-
+  if not content then error('No content!') end
+  if type(content) == 'function' then
+    content = content(name, encyclopedia)
+  end
+  -- create window content
+  local content_data = content_modules[content.name].create(player, window, {category=category, name=name, action=action}, content.data or {})
   -- screen
-  if parent.name == 'screen' then
-    window.force_auto_center()
-    player.opened = window
-  end
+  window.force_auto_center()
+  player.opened = window
   -- register events
   event.register({defines.events.on_gui_click, defines.events.on_gui_closed}, modal_dialog_closed,
                  {name='modal_dialog_closed', player_index=player.index, gui_filters={window, close_button}})
 
-  return {window=window, content_pane=content_pane}
+  return {window=window, titlebar=titlebar}
 end
 
 function modal_dialog.destroy(gui_data, player_index)

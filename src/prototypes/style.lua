@@ -81,6 +81,12 @@ styles.fe_tool_button_active_selected = {
   size = 28
 }
 
+styles.fe_recipe_nav_button = {
+  type = 'button_style',
+  parent = 'tool_button',
+  padding = 0
+}
+
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
 
@@ -147,9 +153,8 @@ styles.fe_search_dialog_pane = {
   vertically_stretchable = 'on'
 }
 
-styles.fe_search_results_pane = {
+styles.fe_light_listbox_pane = {
   type = 'frame_style',
-  margin = 4,
   padding = 0,
   graphical_set = { -- inset from a light frame, but keep the dark background
     base = {
@@ -172,6 +177,21 @@ styles.fe_search_results_pane = {
   horizontally_stretchable = 'on'
 }
 
+styles.fe_search_results_listbox_pane = {
+  type = 'frame_style',
+  parent = 'fe_light_listbox_pane',
+  margin = 4
+}
+
+styles.fe_recipe_items_listbox_pane = {
+  type = 'frame_style',
+  parent = 'fe_light_listbox_pane',
+  minimal_width = 225,
+  minimal_height = 140,
+  maximal_height = 280,
+  vertically_stretchable = nil
+}
+
 -- -----------------------------------------------------------------------------
 -- FLOW STYLES
 
@@ -189,9 +209,19 @@ styles.fe_vertically_centered_flow = {
 }
 
 -- -----------------------------------------------------------------------------
+-- IMAGE STYLES
+
+styles.fe_recipe_as_icon = {
+  type = 'image_style',
+  stretch_image_to_widget_size = true,
+  size = 28,
+  padding = 2
+}
+
+-- -----------------------------------------------------------------------------
 -- LISTBOX STYLES
 
-styles.fe_search_results_listbox = {
+styles.fe_light_listbox = {
   type = 'list_box_style',
   parent = 'list_box',
   scroll_pane_style = { -- invisible scroll pane
@@ -211,14 +241,17 @@ styles.fe_search_results_listbox = {
 -- -----------------------------------------------------------------------------
 -- SCROLL PANE STYLES
 
-styles.fe_prototype_data_scroll_pane = {
+styles.fe_content_scroll_pane = {
   type = 'scroll_pane_style',
   parent = 'scroll_pane',
   background_graphical_set = {
     base = {
       center = {position={76,8}, size=1}
-    },
-    shadow = default_inner_shadow
+    }
+  },
+  vertical_flow_style = {
+    type = 'vertical_flow_style',
+    padding = 8
   }
 }
 
