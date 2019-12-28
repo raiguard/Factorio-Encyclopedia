@@ -58,6 +58,7 @@ local function recursive_prototype_table(t, parent, subtable_count)
 end
 
 function modal_dialog.create(player, parent, category, name, action_type)
+  local encyclopedia = global.encyclopedia[category]
   local window = parent.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
   window.enabled = false
   local titlebar = window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
@@ -66,7 +67,7 @@ function modal_dialog.create(player, parent, category, name, action_type)
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
-               caption={'fe-gui-modal.titlebar-label-caption-'..action_type, global.encyclopedia.items[name].prototype.localised_name}}.style.left_padding = 7
+               caption={'fe-gui-modal.titlebar-label-caption-'..action_type, encyclopedia[name].prototype.localised_name}}.style.left_padding = 7
   local pusher = titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='draggable_space_header'}
   pusher.drag_target = window
   pusher.style.horizontally_stretchable = true
@@ -79,7 +80,7 @@ function modal_dialog.create(player, parent, category, name, action_type)
   local content_pane = window.add{type='scroll-pane', name='fe_modal_content_pane', style='fe_prototype_data_scroll_pane'}
   content_pane.style.maximal_width = 800
   content_pane.style.maximal_height = 800
-  local prototype = global.encyclopedia.items[name].prototype
+  local prototype = encyclopedia[name].prototype
   local initial_table = {}
   for n,_ in pairs(lua_object_members['LuaItemPrototype']) do
     local v = prototype[n]

@@ -16,21 +16,65 @@ local search_gui = {}
 -- -----------------------------------------------------------------------------
 -- LOCAL UTILITIES
 
-
+local function create_action_buttons(gui_data)
+  -- create buttons
+  local actions_scroll = gui_data.search_elems.actions_scrollpane
+  actions_scroll.clear()
+  for _,action in ipairs(gui_defs[gui_data.category].action_buttons) do
+    actions_scroll.add{type='button', name='fe_search_action_button_'..action, caption={'fe-gui-search.action-button-caption-'..action}}
+    .style.horizontally_stretchable = true
+  end
+  -- update GUI state
+  gui_data.state = 'choose_action'
+  gui_data.search_elems.results_pane.visible = false
+  actions_scroll.visible = true
+end
 
 -- -----------------------------------------------------------------------------
 -- EVENT HANDLERS
 
-local function category_button_clicked(e)
-  local gui_data = global.players[e.player_index].gui.search
-  e.element.parent['fe_category_button_'..gui_data.category].style = 'tool_button'
-  e.element.style = 'fe_tool_button_selected'
-  gui_data.category = e.element.name:gsub('fe_category_button_', '')
-  search_gui.refresh_search_pane(game.get_player(e.player_index), gui_data)
+local function action_button_clicked(e)
+  local action = e.element.name:gsub('fe_search_action_button_', '')
+  local player = game.get_player(e.player_index)
+  local gui_data = global.players[e.player_index].gui
+  local search_gui_data = gui_data.search
+  local elem_value = search_gui_data.search_elems.choose_elem_button.elem_value
+  if gui_data.modal then
+    modal_dialog.destroy(gui_data, e.player_index)
+  end
+  -- create modal dialog
+  -- gui_data.modal = modal_dialog.create(player, player.gui.screen, search_gui_data.category, elem_value, action)
+  game.print('create modal dialog: '..action)
+end
+
+local function search_elem_changed(e)
+  local player_table = global.players[e.player_index]
+  local gui_data = player_table.gui.search
+  local search_textfield = gui_data.search_elems.textfield
+  local encyclopedia = global.encyclopedia[gui_data.category]
+  if e.element.elem_value then
+    local entry = encyclopedia[e.element.elem_value]
+    if entry then
+      search_textfield.text = entry.translated_name
+      gui_data.search_query = search_textfield.text
+    else
+      error('\''..e.element.elem_value..'\' not found in '..gui_data.category..' encyclopedia')
+    end
+    -- create action buttons
+    create_action_buttons(gui_data)
+  else
+    search_textfield.text = ''
+    if gui_data.state == 'choose_action' then
+      gui_data.state = 'search'
+      gui_data.search_elems.results_pane.visible = true
+      gui_data.search_elems.results_listbox.clear_items()
+      gui_data.search_elems.actions_scrollpane.visible = false
+    end
+  end
 end
 
 local function search_textfield_text_changed(e)
-  local player = game.get_player(e.player_index)
+  -- local player = game.get_player(e.player_index)
   local player_table = global.players[e.player_index]
   local gui_data = player_table.gui.search
   local results_listbox = gui_data.search_elems.results_listbox
@@ -52,54 +96,56 @@ local function search_textfield_text_changed(e)
       end
     end
   end
-  local breakpoint
   results_listbox.items = items
+  -- update search query
+  gui_data.search_query = query
 end
 
 local function search_textfield_confirmed(e)
-  
+  -- TODO: keyboard navigation
 end
 
-local function search_elem_changed(e)
-  local player_table = global.players[e.player_index]
-  local gui_data = player_table.gui.search
-  local search_textfield = gui_data.search_elems.textfield
-  local encyclopedia = global.encyclopedia[gui_data.category]
-  if e.element.elem_value then
-    local entry = encyclopedia[e.element.elem_value]
-    if entry then
-      search_textfield.text = entry.translated_name
-    else
-      error('\''..e.element.elem_value..'\' not found in '..gui_data.category..' encyclopedia')
-    end
-    -- TODO: show action buttons
-  else
-    search_textfield.text = ''
+local function search_textfield_clicked(e)
+  local gui_data = global.players[e.player_index].gui.search
+  if gui_data.state == 'choose_action' then
+    -- update GUI state
+    gui_data.state = 'search'
+    gui_data.search_elems.results_pane.visible = true
+    gui_data.search_elems.actions_scrollpane.visible = false
+    e.element.text = gui_data.search_query
+    -- update search results
+    search_textfield_text_changed{player_index=e.player_index, element=gui_data.search_elems.textfield}
   end
 end
 
-local function action_button_clicked(e)
-  local action = e.element.name:gsub('fe_search_action_button_', '')
-  local player = game.get_player(e.player_index)
-  local gui_data = global.players[e.player_index].gui
-  local search_gui_data = gui_data.search
-  local elem_value = search_gui_data.search_elems.choose_elem_button.elem_value
-  if not elem_value then
-
-  end
-  if gui_data.modal then
-    modal_dialog.destroy(gui_data, e.player_index)
-  end
-  -- create modal dialog (hardcoded for now)
-  gui_data.modal = modal_dialog.create(player, player.gui.screen, search_gui_data.category, elem_value, 'view_prototype')
+local function results_listbox_selection_state_changed(e)
+  local _,_,internal,localised = e.element.items[e.element.selected_index]:find('^.*/(.*)%]  (.*)$') -- extract object names from rich text definition
+  local gui_data = global.players[e.player_index].gui.search
+  gui_data.search_elems.choose_elem_button.elem_value = internal
+  gui_data.search_elems.textfield.text = localised
+  create_action_buttons(gui_data)
 end
+
+local function category_button_clicked(e)
+  local gui_data = global.players[e.player_index].gui.search
+  e.element.parent['fe_category_button_'..gui_data.category].style = 'tool_button'
+  e.element.style = 'fe_tool_button_selected'
+  gui_data.category = e.element.name:gsub('fe_category_button_', '')
+  search_gui.refresh_search_pane(game.get_player(e.player_index), gui_data)
+end
+
+-- KEYBINDING HANDLERS
+
+
 
 local handlers = {
-  category_button_clicked = category_button_clicked,
+  search_action_button_clicked = action_button_clicked,
+  search_elem_changed = search_elem_changed,
   search_textfield_text_changed = search_textfield_text_changed,
   search_textfield_confirmed = search_textfield_confirmed,
-  search_elem_changed = search_elem_changed,
-  action_button_clicked = action_button_clicked
+  search_textfield_clicked = search_textfield_clicked,
+  search_results_listbox_selection_state_changed = results_listbox_selection_state_changed,
+  search_category_button_clicked = category_button_clicked
 }
 
 event.on_load(function()
@@ -122,7 +168,7 @@ local function create_base_gui(player, mod_frame_flow)
     category_bar.add{type='button', name='fe_category_button_'..name, style='tool_button', caption={'fe-gui-search.category-button-caption-'..name}}
   end
   local search_pane = content_pane.add{type='frame', name='fe_search_dialog_pane', style='fe_search_dialog_pane', direction='vertical'}
-  event.on_gui_click(category_button_clicked, {name='category_button_clicked', player_index=player.index, gui_filters='fe_category_button_'})
+  event.on_gui_click(category_button_clicked, {name='search_category_button_clicked', player_index=player.index, gui_filters='fe_category_button_'})
   return {window=window, category_bar=category_bar, search_pane=search_pane}
 end
 
@@ -140,6 +186,10 @@ local function create_search_pane(parent, player, gui_defs)
                                         clear_and_focus_on_right_click=true}
   elems.results_pane = parent.add{type='frame', name='fe_search_results_pane', style='fe_search_results_pane'}
   elems.results_listbox = elems.results_pane.add{type='list-box', name='fe_search_results_listbox', style='fe_search_results_listbox'}
+  elems.actions_scrollpane = parent.add{type='scroll-pane', name='fe_search_actions_scroll', style='scroll_pane_light', direction='vertical'}
+  elems.actions_scrollpane.style.margin = 4
+  elems.actions_scrollpane.style.vertically_stretchable = true
+  elems.actions_scrollpane.visible = false
   return elems
 end
 
@@ -164,14 +214,17 @@ function search_gui.toggle(player, category)
     -- create search pane
     gui_data.search_elems = create_search_pane(gui_data.base_elems.search_pane, player, gui_defs[gui_data.category])
     -- register handlers
-    -- use names instead of direct elements so the events don't get screwed up when we refresh the search pane
-    event.on_gui_click(action_button_clicked, {name='action_button_clicked', player_index=player.index, gui_filters='fe_search_action_button_'})
+    -- use names instead of direct elements so we don't have to re-register then when switching categories
+    event.on_gui_click(action_button_clicked, {name='search_action_button_clicked', player_index=player.index, gui_filters='fe_search_action_button_'})
     event.on_gui_elem_changed(search_elem_changed, {name='search_elem_changed', player_index=player.index, gui_filters='fe_search_choose_elem_button'})
+    event.on_gui_click(search_textfield_clicked, {name='search_textfield_clicked', player_index=player.index, gui_filters='fe_search_textfield'})
     event.on_gui_text_changed(search_textfield_text_changed, {name='search_textfield_text_changed', player_index=player.index,
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                            gui_filters='fe_search_textfield'})
+    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed'})
     gui_data.state = 'search'
+    gui_data.search_query = ''
     global.players[player.index].gui.search = gui_data
   else
     player.print{'fe-chat-message.translation-not-finished'}

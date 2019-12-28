@@ -20,7 +20,9 @@ return {
   fluid = {
     choose_elem_button = 'fluid',
     action_buttons = {
-      'view_prototype'
+      'view_prototype',
+      'as_recipe_ingredient',
+      'as_recipe_product'
     }
   },
   item = {

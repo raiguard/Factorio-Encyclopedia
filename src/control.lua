@@ -44,16 +44,16 @@ local function build_translation_data()
   global.__translation.translation_data = translation_data
 end
 
-local function translate_whole(player)
+local function translate_whole(player, ignore_error)
   -- global.players[player.index].search = nil -- remove table to prevent opening the GUI while translating
   for name,t in pairs(global.__translation.translation_data) do
-    translation.start(player, name, t.data, t.strings, {convert_to_lowercase=true})
+    translation.start(player, name, t.data, t.strings, {convert_to_lowercase=true, ignore_error=ignore_error})
   end
 end
 
-local function translate_for_all_players()
+local function translate_for_all_players(ignore_error)
   for _,player in ipairs(game.connected_players) do
-    translate_whole(player)
+    translate_whole(player, ignore_error)
   end
 end
 
@@ -90,7 +90,7 @@ end)
 event.on_configuration_changed(function()
   global.encyclopedia = nil
   build_translation_data()
-  translate_for_all_players()
+  translate_for_all_players(true)
 end)
 
 event.on_player_created(function(e)
