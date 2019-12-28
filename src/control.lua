@@ -9,10 +9,15 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 local translation = require('lualib/translation')
 
+-- locals
 local serialise_localised_string = translation.serialise_localised_string
 
 -- modules
 local search_gui = require('scripts/gui/search')
+
+-- globals
+open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
+open_modal_dialog_event = event.generate_id('open_modal_dialog') -- not really used by the mod, but is for the remote interface
 
 -- -----------------------------------------------------------------------------
 -- ENCYCLOPEDIA DATA
@@ -190,6 +195,10 @@ end)
 event.on_gui_click(function(e)
   search_gui.toggle(game.get_player(e.player_index))
 end, {gui_filters='fe_mod_gui_button'})
+
+event.register(open_search_gui_event, function(e)
+  search_gui.create(game.get_player(e.player_index), e.use_keyboard_nav, e.category, e.name)
+end)
 
 -- DEBUGGING
 if __DebugAdapter then

@@ -41,13 +41,18 @@ local function nav_forward_button_clicked(e)
 
 end
 
+local function search_button_clicked(e)
+  event.raise(open_search_gui_event, {player_index=e.player_index})
+end
+
 local function modal_dialog_closed(e)
   modal_dialog.destroy(global.players[e.player_index].gui, e.player_index)
 end
 
 local handlers = {
-  nav_backward_button_clicked = nav_backward_button_clicked,
-  nav_forward_button_clicked = nav_forward_button_clicked,
+  modal_nav_backward_button_clicked = nav_backward_button_clicked,
+  modal_nav_forward_button_clicked = nav_forward_button_clicked,
+  modal_search_button_clicked = search_button_clicked,
   modal_dialog_closed = modal_dialog_closed
 }
 
@@ -80,8 +85,10 @@ function modal_dialog.create(player, category, name, action)
   pusher.style.natural_height = 24
   pusher.style.minimal_width = 24
   pusher.style.right_margin = 7
+  local search_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_search', style='close_button', sprite='fe_search',
+                                     hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark', tooltip={'fe-gui-modal.titlebar-search-button-tooltip'}}
   local close_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_close', style='close_button', sprite='utility/close_white',
-               hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
+                                    hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
   -- get content module from data
   local content = action_to_content[category]
   if not content then error('No content!') end
@@ -100,6 +107,7 @@ function modal_dialog.create(player, category, name, action)
   window.force_auto_center()
   player.opened = window
   -- register events
+  event.on_gui_click(search_button_clicked, {name='modal_search_button_clicked', player_index=player.index, gui_filters=search_button})
   event.register({defines.events.on_gui_click, defines.events.on_gui_closed}, modal_dialog_closed,
                  {name='modal_dialog_closed', player_index=player.index, gui_filters={window, close_button}})
 

@@ -41,16 +41,16 @@ data:extend{
   },
   {
     type = 'sprite',
-    name = 'fe_nav_next',
-    filename = '__Encyclopedia__/graphics/gui/nav-next.png',
+    name = 'fe_search',
+    filename = '__Encyclopedia__/graphics/gui/search.png',
     size = 32,
     mipmap_count = 2,
     flags = {'icon'}
   },
   {
     type = 'sprite',
-    name = 'fe_nav_previous',
-    filename = '__Encyclopedia__/graphics/gui/nav-previous.png',
+    name = 'fe_search_dark',
+    filename = '__Encyclopedia__/graphics/gui/search-dark.png',
     size = 32,
     mipmap_count = 2,
     flags = {'icon'}
