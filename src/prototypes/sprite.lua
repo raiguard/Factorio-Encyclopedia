@@ -30,6 +30,22 @@ data:extend{
     size = 32,
     mipmap_count = 2,
     flags = {'icon'}
+  },
+  {
+    type = 'sprite',
+    name = 'fe_nav_next',
+    filename = '__Encyclopedia__/graphics/gui/nav-next.png',
+    size = 32,
+    mipmap_count = 2,
+    flags = {'icon'}
+  },
+  {
+    type = 'sprite',
+    name = 'fe_nav_previous',
+    filename = '__Encyclopedia__/graphics/gui/nav-previous.png',
+    size = 32,
+    mipmap_count = 2,
+    flags = {'icon'}
   }
 }
 
