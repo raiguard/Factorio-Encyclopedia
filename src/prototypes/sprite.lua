@@ -1,6 +1,14 @@
 data:extend{
   {
     type = 'sprite',
+    name = 'fe_logo',
+    filename = '__Encyclopedia__/graphics/gui/encyclopedia.png',
+    size = 32,
+    mipmap_count = 2,
+    flags = {'icon'}
+  },
+  {
+    type = 'sprite',
     name = 'fe_nav_forward',
     filename = '__Encyclopedia__/graphics/gui/nav-forward.png',
     size = 32,
