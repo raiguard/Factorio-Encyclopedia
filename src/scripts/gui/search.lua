@@ -3,13 +3,12 @@
 
 -- dependencies
 local event = require('lualib/event')
-local mod_gui = require('mod-gui')
 
 -- modules
 local modal_dialog = require('scripts/gui/modal-dialogs/root')
 
 -- library
-local search_gui = {}
+local self = {}
 
 -- -----------------------------------------------------------------------------
 -- UTILITIES
@@ -37,16 +36,14 @@ local gui_defs = {
   fluid = {
     choose_elem_button = 'fluid',
     action_buttons = {
-      'as_recipe_ingredient',
-      'as_recipe_product',
+      'recipe_usage',
       'view_prototype'
     }
   },
   item = {
     choose_elem_button = 'item',
     action_buttons = {
-      'as_recipe_ingredient',
-      'as_recipe_product',
+      'recipe_usage',
       'view_prototype'
     }
   },
@@ -78,13 +75,12 @@ local function action_button_clicked(e)
   local action = e.element.name:gsub('fe_search_action_button_', '')
   local player = game.get_player(e.player_index)
   local gui_data = global.players[e.player_index].gui
-  local search_gui_data = gui_data.search
-  local elem_value = search_gui_data.search_elems.choose_elem_button.elem_value
+  local self_data = gui_data.search
+  local elem_value = self_data.search_elems.choose_elem_button.elem_value
   if gui_data.modal then
     modal_dialog.destroy(gui_data, e.player_index)
   end
-  -- TODO: create modal dialog
-  gui_data.modal = modal_dialog.create(player, search_gui_data.category, elem_value, action)
+  gui_data.modal = modal_dialog.create(player, self_data.category, elem_value, action)
 end
 
 local function search_elem_changed(e)
@@ -135,7 +131,7 @@ local function search_textfield_text_changed(e)
   local items = {}
   local items_len = 0
   for localised,internal in pairs(search_table) do
-    if localised:match(query) then
+    if localised:find(query) then
       for i=1,#internal do
         items_len = items_len + 1
         items[items_len] = '[img='..gui_data.category..'/'..internal[i]..']  '..localised
@@ -183,7 +179,7 @@ local function category_button_clicked(e)
   e.element.parent['fe_category_button_'..gui_data.category].style = 'tool_button'
   e.element.style = 'fe_tool_button_active'
   gui_data.category = e.element.name:gsub('fe_category_button_', '')
-  search_gui.refresh_search_pane(game.get_player(e.player_index), gui_data)
+  self.refresh_search_pane(game.get_player(e.player_index), gui_data)
 end
 
 local function input_nav_dir(e)
@@ -257,7 +253,7 @@ local function search_textfield_confirmed(e)
     -- check listbox content
     if #gui_data.search_elems.results_listbox.items == 0 then
       -- destroy the search window
-      search_gui.toggle(game.get_player(e.player_index))
+      self.toggle(game.get_player(e.player_index))
       return
     end
     -- set initial index
@@ -270,8 +266,12 @@ local function search_textfield_confirmed(e)
     gui_data.state = 'choose_result'
     gui_data.use_keyboard_nav = true
   else
-    search_gui.toggle(game.get_player(e.player_index))
+    self.destroy(game.get_player(e.player_index))
   end
+end
+
+local function search_gui_closed(e)
+  self.destroy(game.get_player(e.player_index))
 end
 
 
@@ -286,6 +286,7 @@ local handlers = {
   search_input_nav_confirm = input_nav_confirm,
   search_input_nav_back = input_nav_back,
   search_textfield_confirmed = search_textfield_confirmed,
+  search_gui_closed = search_gui_closed
 }
 
 event.on_load(function()
@@ -293,11 +294,10 @@ event.on_load(function()
 end)
 
 -- -----------------------------------------------------------------------------
--- LIBRARY
+-- UTILITIES (again)
 
-local function create_base_gui(player, mod_frame_flow)
-  local frame_flow = mod_frame_flow.add{type='flow', name='fe_mod_gui_frame_flow', direction='horizontal'}
-  local window = frame_flow.add{type='frame', name='fe_search_window', style='dialog_frame', direction='vertical'}
+local function create_base_gui(player)
+  local window = player.gui.screen.add{type='frame', name='fe_search_window', style='dialog_frame', direction='vertical'}
   -- titlebar
   local titlebar = window.add{type='flow', name='fe_search_titlebar_flow', style='fe_titlebar_flow'}
   titlebar.add{type='label', name='fe_search_titlebar_label', style='frame_title', caption={'fe-gui-search.window-label-caption'}}
@@ -338,22 +338,15 @@ local function create_search_pane(parent, player, gui_defs)
   return elems
 end
 
--- toggle search GUI
-function search_gui.toggle(player, use_keyboard_nav, category)
+-- -----------------------------------------------------------------------------
+-- OBJECT
+
+function self.create(player, use_keyboard_nav, category, name)
   category = category or 'item'
   local gui_data = {category=category}
-  local mod_frame_flow = mod_gui.get_frame_flow(player)
-  if mod_frame_flow.fe_mod_gui_frame_flow then -- destroy the GUI
-    mod_frame_flow.fe_mod_gui_frame_flow.destroy()
-    -- deregister conditional handlers
-    for name,handler in pairs(handlers) do
-      if event.is_registered(name, player.index) then
-        event.deregister_conditional(handler, {name=name, player_index=player.index})
-      end
-    end
-  elseif global.players[player.index].flags.allow_open_gui then -- create the GUI
+  if global.players[player.index].flags.allow_open_gui then
     -- base window
-    gui_data.base_elems = create_base_gui(player, mod_frame_flow)
+    gui_data.base_elems = create_base_gui(player)
     -- set active category button
     gui_data.base_elems.category_bar['fe_category_button_'..category].style = 'fe_tool_button_active'
     -- create search pane
@@ -366,9 +359,10 @@ function search_gui.toggle(player, use_keyboard_nav, category)
     event.on_gui_text_changed(search_textfield_text_changed, {name='search_textfield_text_changed', player_index=player.index,
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
-                           gui_filters='fe_search_textfield'})
+                          gui_filters='fe_search_textfield'})
     event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed',
-                                         player_index=player.index, gui_filters='fe_search_results_listbox'})
+                                        player_index=player.index, gui_filters='fe_search_results_listbox'})
+    event.on_gui_closed(search_gui_closed, {name='search_gui_closed', player_index=player.index, gui_filters=gui_data.base_elems.window})
     gui_data.search_query = ''
     if use_keyboard_nav then
       -- register keyboard shortcuts
@@ -391,6 +385,8 @@ function search_gui.toggle(player, use_keyboard_nav, category)
       gui_data.search_elems.textfield.focus()
       gui_data.state = 'search'
     end
+    gui_data.base_elems.window.force_auto_center()
+    player.opened = gui_data.base_elems.window
     global.players[player.index].gui.search = gui_data
   else
     player.print{'fe-chat-message.translation-not-finished'}
@@ -398,8 +394,29 @@ function search_gui.toggle(player, use_keyboard_nav, category)
   end
 end
 
+function self.destroy(player)
+  player.gui.screen.fe_search_window.destroy()
+  -- deregister conditional handlers
+  for name,handler in pairs(handlers) do
+    if event.is_registered(name, player.index) then
+      event.deregister_conditional(handler, {name=name, player_index=player.index})
+    end
+  end
+  global.players[player.index].gui.search = nil
+end
+
+-- toggle search GUI
+function self.toggle(player, use_keyboard_nav, category, name)
+  local screen = player.gui.screen
+  if screen.fe_search_window then
+    self.destroy(player)
+  else
+    self.create(player, use_keyboard_nav, category, name)
+  end
+end
+
 -- recreates the search pane
-function search_gui.refresh_search_pane(player, gui_data)
+function self.refresh_search_pane(player, gui_data)
   gui_data.base_elems.search_pane.clear()
   gui_data.search_elems = create_search_pane(gui_data.base_elems.search_pane, player, gui_defs[gui_data.category])
   gui_data.search_elems.textfield.focus()
@@ -407,4 +424,6 @@ function search_gui.refresh_search_pane(player, gui_data)
   gui_data.search_query = ''
 end
 
-return search_gui
+-- -----------------------------------------------------------------------------
+
+return self
