@@ -104,8 +104,8 @@ end)
 event.register(translation.start_event, function(e)
   local player_table = global.players[e.player_index]
   player_table.flags.allow_open_gui = false
-  if player_table.gui.search or player_table.gui.modal then
-    -- TODO: close GUI
+  if player_table.gui.search then
+    search_gui.toggle(game.get_player(e.player_index))
   end
 end)
 

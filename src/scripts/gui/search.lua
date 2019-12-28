@@ -6,11 +6,69 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 
 -- modules
-local gui_defs = require('scripts/gui/gui-definitions')
 local modal_dialog = require('scripts/gui/modal-dialogs/root')
 
 -- library
 local search_gui = {}
+
+-- -----------------------------------------------------------------------------
+-- UTILITIES
+
+-- defines what categories there are and settings for each category
+local gui_defs = {
+  achievement = {
+    choose_elem_button = 'achievement',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  entity = {
+    choose_elem_button = 'entity',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  equipment = {
+    choose_elem_button = 'equipment',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  fluid = {
+    choose_elem_button = 'fluid',
+    action_buttons = {
+      'as_recipe_ingredient',
+      'as_recipe_product',
+      'view_prototype'
+    }
+  },
+  item = {
+    choose_elem_button = 'item',
+    action_buttons = {
+      'as_recipe_ingredient',
+      'as_recipe_product',
+      'view_prototype'
+    }
+  },
+  recipe = {
+    choose_elem_button = 'recipe',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  technology = {
+    choose_elem_button = 'technology',
+    action_buttons = {
+      'view_prototype'
+    }
+  },
+  tile = {
+    choose_elem_button = 'tile',
+    action_buttons = {
+      'view_prototype'
+    }
+  }
+}
 
 -- -----------------------------------------------------------------------------
 -- EVENT HANDLERS
@@ -24,8 +82,7 @@ local function action_button_clicked(e)
   if gui_data.modal then
     modal_dialog.destroy(gui_data, e.player_index)
   end
-  -- create modal dialog
-  -- gui_data.modal = modal_dialog.create(player, player.gui.screen, search_gui_data.category, elem_value, action)
+  -- TODO: create modal dialog
   game.print('create modal dialog: '..action)
 end
 
@@ -194,16 +251,20 @@ local function input_nav_back(e)
 end
 
 local function search_textfield_confirmed(e)
-  local gui_data = global.players[e.player_index].gui.search
-  -- set initial index
-  gui_data.search_elems.results_listbox.selected_index = 1
-  -- register keyboard shortcuts
-  event.register({'fe-nav-up', 'fe-nav-down'}, input_nav_dir, {name='search_input_nav_dir', player_index=e.player_index})
-  event.register('fe-nav-confirm', input_nav_confirm, {name='search_input_nav_confirm', player_index=e.player_index})
-  event.register('fe-nav-back', input_nav_back, {name='search_input_nav_back', player_index=e.player_index})
-  -- set GUI state
-  gui_data.state = 'choose_result'
-  gui_data.use_keyboard_nav = true
+  if e.element.text ~= '' then
+    local gui_data = global.players[e.player_index].gui.search
+    -- set initial index
+    gui_data.search_elems.results_listbox.selected_index = 1
+    -- register keyboard shortcuts
+    event.register({'fe-nav-up', 'fe-nav-down'}, input_nav_dir, {name='search_input_nav_dir', player_index=e.player_index})
+    event.register('fe-nav-confirm', input_nav_confirm, {name='search_input_nav_confirm', player_index=e.player_index})
+    event.register('fe-nav-back', input_nav_back, {name='search_input_nav_back', player_index=e.player_index})
+    -- set GUI state
+    gui_data.state = 'choose_result'
+    gui_data.use_keyboard_nav = true
+  else
+    search_gui.toggle(game.get_player(e.player_index))
+  end
 end
 
 
