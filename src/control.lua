@@ -82,6 +82,8 @@ local build_functions = {
   }
 }
 
+local categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
+
 -- builds encyclopedia data
 local function build_encyclopedia()
   global.encyclopedia = {}
@@ -111,9 +113,13 @@ local function build_encyclopedia()
     end
     return encyclopedia_data, {data=translation_data, strings=translation_strings}
   end
-  local translation_data = {}
-  for _,type in ipairs{'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'} do
-    encyclopedia[type], translation_data[type] = setup(type)
+  local translation_data = {category_name={data={}, strings={}}}
+  for _,category in ipairs(categories) do
+    encyclopedia[category], translation_data[category] = setup(category)
+    -- category
+    local serialised_category = serialise_localised_string{'fe-gui-general.category-'..category}
+    translation_data.category_name.data[serialised_category] = category
+    translation_data.category_name.strings[#translation_data.category_name.strings+1] = {'fe-gui-general.category-'..category}
   end
   global.__translation.translation_data = translation_data
 end
@@ -135,6 +141,7 @@ end
 
 local function setup_player(player)
   global.players[player.index] = {
+    dictionary = {},
     flags = {
       allow_open_gui = false
     },
@@ -185,14 +192,9 @@ end)
 
 event.register(translation.finish_event, function(e)
   local player_table = global.players[e.player_index]
-  player_table.search[e.dictionary_name] = e.dictionary
-  local encyclopedia = global.encyclopedia[e.dictionary_name]
-  for localised,internal in pairs(e.dictionary) do
-    for i=1,#internal do
-      encyclopedia[internal[i]].translated_name = localised
-    end
-  end
-  if table_size(player_table.search) == 8 then
+  player_table.dictionary[e.dictionary_name] = e.dictionary
+  player_table.search[e.dictionary_name] = e.searchable
+  if table_size(player_table.dictionary) == 9 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
       player_table.flags.tried_to_open_gui = nil
@@ -202,7 +204,7 @@ event.register(translation.finish_event, function(e)
 end)
 
 event.register('fe-search', function(e)
-  search_gui.toggle(game.get_player(e.player_index), true)
+  search_gui.toggle(game.get_player(e.player_index))
 end)
 
 event.on_gui_click(function(e)

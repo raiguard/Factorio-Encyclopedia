@@ -66,17 +66,26 @@ local function sort_translated_string(e)
     local value = t.data[serialised]
     if value then
       if e.translated then
-        local result = t.result[e.result]
+        local result = e.result
         if t.convert_to_lowercase then
-          e.result = string_lower(e.result)
+          result = string_lower(result)
         end
-        if result then
-          result[#result+1] = value
+        -- dictionary
+        local dictionary = t.dictionary[value]
+        if dictionary then
+          dictionary[#dictionary+1] = result -- this shouldn't ever happen, but it's included just in case
         else
-          t.result[e.result] = {value}
+          t.dictionary[value] = {result}
+        end
+        -- searchable
+        local searchable = t.searchable[result]
+        if searchable then
+          searchable[#searchable+1] = value
+        else
+          t.searchable[result] = {value}
         end
       else
-        log('Key: '..serialised..' for dictionary: '..name..' was not successfully translated, and will not be included in the output table')
+        log(name..':  key \''..serialised..'\' was not successfully translated, and will not be included in the dictionary.')
       end
       t.data[serialised] = nil
       if table_size(t.data) == 0 then -- this dictionary has completed translation
@@ -89,7 +98,7 @@ local function sort_translated_string(e)
           end
         end
         event.raise(translation.update_dictionary_count_event, {delta=-1})
-        event.raise(translation.finish_event, {player_index=e.player_index, dictionary_name=name, dictionary=t.result})
+        event.raise(translation.finish_event, {player_index=e.player_index, dictionary_name=name, dictionary=t.dictionary, searchable=t.searchable})
       end
       return
     end
@@ -119,7 +128,8 @@ function translation.start(player, dictionary_name, data, strings, options)
     -- settings
     convert_to_lowercase = options.convert_to_lowercase,
     -- output
-    result = {}
+    dictionary = {},
+    searchable = {}
   }
   event.raise(translation.update_dictionary_count_event, {delta=1})
   event.raise(translation.start_event, {player_index=player.index, dictionary_name=dictionary_name})
