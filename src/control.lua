@@ -67,6 +67,18 @@ local build_functions = {
       end
       return {made_in=made_in, prototype=prototype}
     end
+  },
+  technology = {
+    iteration = function(name, prototype, iteration_data, encyclopedia)
+      for _,modifier in ipairs(prototype.effects) do
+        if modifier.type == 'unlock-recipe' then
+          local recipe = encyclopedia.recipe[modifier.recipe]
+          if not recipe.unlocked_by then recipe.unlocked_by = {} end
+          recipe.unlocked_by[#recipe.unlocked_by+1] = name
+        end
+      end
+      return {prototype=prototype}
+    end
   }
 }
 

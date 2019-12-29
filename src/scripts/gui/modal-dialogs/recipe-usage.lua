@@ -56,7 +56,7 @@ function self.create(player, parent, action_data, content_data)
           i = i + 1
           local caption = {'', '[img=recipe/'..name..']  ', recipe_obj.prototype.localised_name}
           recipes_listbox.add{type='button', name='fe_recipes_listbox_item_'..i, style='fe_mock_listbox_item',
-                              caption=caption, tooltip={'', caption, '\nClick to view recipe'}}
+                              caption=caption, tooltip={'fe-gui-recipe-usage.recipe-listbox-item-tooltip', caption}}
         end
       end
     end

@@ -35,7 +35,7 @@ function self.create(player, parent, action_data, content_data)
   toolbar.frame.add{type='empty-widget', name='fe_pusher_2', style='fe_invisible_horizontal_pusher'}
   gui_data.toolbar = toolbar
   -- CONTENT SCROLLPANE
-  local content_scrollpane = background_pane.add{type='scroll-pane', name='fe_content_pane', style='scroll_pane_under_subheader', direction='vertical'}
+  local content_scrollpane = background_pane.add{type='scroll-pane', name='fe_content_pane', style='scroll_pane_under_subheader'}
   content_scrollpane.style.padding = 8
   -- ITEMS
   local items_flow = content_scrollpane.add{type='flow', name='fe_items_flow', direction='horizontal'}
@@ -68,7 +68,19 @@ function self.create(player, parent, action_data, content_data)
   for i,name in ipairs(recipe.made_in) do
     local entity = encyclopedia.entity[name]
     local caption = {'', '[img=entity/'..name..']  ', entity.prototype.localised_name}
-    made_in_listbox.add{type='button', name='fe_made_in_item_'..i, style='fe_mock_listbox_item', caption=caption, tooltip=caption}
+    made_in_listbox.add{type='button', name='fe_made_in_item_'..i, style='fe_mock_listbox_item', caption=caption,
+                        tooltip={'fe-gui-recipe.made-in-listbox-item-tooltip', caption}}
+  end
+  -- unlocked by
+  local unlocked_by_flow = lower_flow.add{type='flow', name='fe_unlocked_by_flow', direction='vertical'}
+  unlocked_by_flow.add{type='label', name='fe_listbox_label', style='fe_mock_listbox_label', caption={'fe-gui-recipe.unlocked-by-label-caption'}}
+  local unlocked_by_listbox = unlocked_by_flow.add{type='frame', name='fe_unlocked_by_pane', style='fe_recipe_mock_listbox_frame'}
+  .add{type='scroll-pane', name='fe_unlocked_by_listbox', style='fe_mock_listbox_scrollpane'}
+  for i,name in ipairs(recipe.unlocked_by) do
+    local technology = encyclopedia.technology[name]
+    local caption = {'', '[img=technology/'..name..']  ', technology.prototype.localised_name}
+    unlocked_by_listbox.add{type='button', name='fe_unlocked_by_item_'..i, style='fe_mock_listbox_item', caption=caption,
+                            tooltip={'fe-gui-recipe.unlocked-by-listbox-item-tooltip', caption}}
   end
   gui_data.filename = 'recipe'
   return gui_data
