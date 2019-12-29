@@ -98,25 +98,24 @@ local function search_elem_changed(e)
     end
     -- update GUI state
     gui_data.state = 'choose_action'
-    gui_data.search_elems.results_pane.visible = false
+    gui_data.search_elems.results_scrollpane.visible = false
     gui_data.search_elems.actions_scrollpane.visible = true
     gui_data.use_keyboard_nav = false
   else
     search_textfield.text = ''
     if gui_data.state == 'choose_action' then
       gui_data.state = 'search'
-      gui_data.search_elems.results_pane.visible = true
+      gui_data.search_elems.results_scrollpane.visible = true
       gui_data.search_elems.results_listbox.clear_items()
       gui_data.search_elems.actions_scrollpane.visible = false
-      if gui_data.selected_index then
-        gui_data.search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
+      if gui_data.selected_action then
+        gui_data.search_elems.actions_scrollpane.children[gui_data.selected_action].style = 'button'
       end
     end
   end
 end
 
 local function search_textfield_text_changed(e)
-  -- local player = game.get_player(e.player_index)
   local player_table = global.players[e.player_index]
   local gui_data = player_table.gui.search
   local results_listbox = gui_data.search_elems.results_listbox
@@ -124,21 +123,28 @@ local function search_textfield_text_changed(e)
   local search_table = player_table.search[gui_data.category]
   -- override all if it's empty
   if e.element.text == '' then
-    results_listbox.clear_items()
+    results_listbox.clear()
     return
   end
   -- perform search
-  local items = {}
-  local items_len = 0
+  local index = 0
+  local items = results_listbox.children
   for localised,internal in pairs(search_table) do
     if localised:find(query) then
       for i=1,#internal do
-        items_len = items_len + 1
-        items[items_len] = '[img='..gui_data.category..'/'..internal[i]..']  '..localised
+        local caption = '[img='..gui_data.category..'/'..internal[i]..']  '..localised
+        index = index + 1
+        if items[index] then
+          items[index].caption = caption
+        else
+          results_listbox.add{type='button', name='fe_mock_listbox_item_'..index, style='fe_mock_listbox_item', caption=caption}
+        end
       end
     end
   end
-  results_listbox.items = items
+  for i=index+1,#items do
+    items[i].destroy()
+  end
   -- update search query
   gui_data.search_query = query
 end
@@ -148,7 +154,7 @@ local function search_textfield_clicked(e)
   if gui_data.state == 'choose_action' then
     -- update GUI state
     gui_data.state = 'search'
-    gui_data.search_elems.results_pane.visible = true
+    gui_data.search_elems.results_scrollpane.visible = true
     gui_data.search_elems.actions_scrollpane.visible = false
     gui_data.search_elems.results_listbox.selected_index = 0
     e.element.text = gui_data.search_query
@@ -157,17 +163,17 @@ local function search_textfield_clicked(e)
   end
 end
 
-local function results_listbox_selection_state_changed(e)
-  local _,_,internal,localised = e.element.items[e.element.selected_index]:find('^.*/(.*)%]  (.*)$') -- extract object names from rich text definition
+local function results_listbox_item_clicked(e)
+  local _,_,internal,localised = e.element.caption:find('^.*/(.*)%]  (.*)$') -- extract object names from rich text definition
   local gui_data = global.players[e.player_index].gui.search
   gui_data.search_elems.choose_elem_button.elem_value = internal
   gui_data.search_elems.textfield.text = localised
   -- update GUI state
   gui_data.state = 'choose_action'
-  gui_data.search_elems.results_pane.visible = false
+  gui_data.search_elems.results_scrollpane.visible = false
   gui_data.search_elems.actions_scrollpane.visible = true
   if e.used_keyboard then
-    gui_data.selected_index = 1
+    gui_data.selected_action = 1
     gui_data.search_elems.actions_scrollpane.children[1].style = 'fe_button_selected'
   else
     gui_data.use_keyboard_nav = false
@@ -190,26 +196,29 @@ local function input_nav_dir(e)
   if gui_data.use_keyboard_nav then
     if gui_data.state == 'choose_category' then
       local children = base_elems.category_bar.children
-      local selected = children[gui_data.selected_index]
+      local selected = children[gui_data.selected_category]
       if selected.style.name == 'fe_tool_button_active_selected' then
         selected.style = 'fe_tool_button_active'
       else
         selected.style = 'tool_button'
       end
-      gui_data.selected_index = util.clamp(gui_data.selected_index+delta, 1, #children)
-      selected = children[gui_data.selected_index]
+      gui_data.selected_category = util.clamp(gui_data.selected_category+delta, 1, #children)
+      selected = children[gui_data.selected_category]
       if selected.style.name == 'fe_tool_button_active' then
         selected.style = 'fe_tool_button_active_selected'
       else
         selected.style = 'fe_tool_button_selected'
       end
     elseif gui_data.state == 'choose_result' then
-      local listbox = search_elems.results_listbox
-      listbox.selected_index = util.clamp(listbox.selected_index+delta, 1, #listbox.items)
+      local children = search_elems.results_listbox.children
+      children[gui_data.selected_result].style = 'fe_mock_listbox_item'
+      gui_data.selected_result = util.clamp(gui_data.selected_result+delta, 1, #children)
+      children[gui_data.selected_result].style = 'fe_mock_listbox_item_selected'
+      search_elems.results_listbox.scroll_to_element(children[gui_data.selected_result])
     elseif gui_data.state == 'choose_action' then
-      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
-      gui_data.selected_index = util.clamp(gui_data.selected_index+delta, 1, #search_elems.actions_scrollpane.children)
-      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'fe_button_selected'
+      search_elems.actions_scrollpane.children[gui_data.selected_action].style = 'button'
+      gui_data.selected_action = util.clamp(gui_data.selected_action+delta, 1, #search_elems.actions_scrollpane.children)
+      search_elems.actions_scrollpane.children[gui_data.selected_action].style = 'fe_button_selected'
     end
   end
 end
@@ -219,11 +228,12 @@ local function input_nav_confirm(e)
   local search_elems = gui_data.search_elems
   if gui_data.use_keyboard_nav then
     if gui_data.state == 'choose_category' then
-      category_button_clicked{player_index=e.player_index, element=gui_data.base_elems.category_bar.children[gui_data.selected_index]}
+      category_button_clicked{player_index=e.player_index, element=gui_data.base_elems.category_bar.children[gui_data.selected_category]}
     elseif gui_data.state == 'choose_result' then
-      results_listbox_selection_state_changed{player_index=e.player_index, element=search_elems.results_listbox, used_keyboard=true}
+      results_listbox_item_clicked{player_index=e.player_index, element=search_elems.results_listbox.children[gui_data.selected_result],
+                                              used_keyboard=true}
     elseif gui_data.state == 'choose_action' then
-      action_button_clicked{player_index=e.player_index, element=search_elems.actions_scrollpane.children[gui_data.selected_index]}
+      action_button_clicked{player_index=e.player_index, element=search_elems.actions_scrollpane.children[gui_data.selected_action]}
     end
   end
 end
@@ -234,14 +244,15 @@ local function input_nav_back(e)
   if gui_data.use_keyboard_nav then
     if gui_data.state == 'choose_result' then
       search_elems.textfield.focus()
-      search_elems.results_listbox.selected_index = 0
+      search_elems.results_listbox.children[gui_data.selected_result].style = 'fe_mock_listbox_item'
       gui_data.state = 'search'
+      gui_data.selected_result = nil
     elseif gui_data.state == 'choose_action' then
-      search_elems.results_pane.visible = true
+      search_elems.results_scrollpane.visible = true
       search_elems.actions_scrollpane.visible = false
       search_elems.textfield.text = gui_data.search_query
       search_elems.choose_elem_button.elem_value = nil
-      search_elems.actions_scrollpane.children[gui_data.selected_index].style = 'button'
+      search_elems.actions_scrollpane.children[gui_data.selected_action].style = 'button'
       gui_data.state = 'choose_result'
     end
   end
@@ -251,13 +262,13 @@ local function search_textfield_confirmed(e)
   if e.element.text ~= '' then
     local gui_data = global.players[e.player_index].gui.search
     -- check listbox content
-    if #gui_data.search_elems.results_listbox.items == 0 then
+    if #gui_data.search_elems.results_listbox.children == 0 then
       -- destroy the search window
       self.toggle(game.get_player(e.player_index))
       return
     end
     -- set initial index
-    gui_data.search_elems.results_listbox.selected_index = 1
+    gui_data.search_elems.results_listbox.children[1].style = 'fe_mock_listbox_item_selected'
     -- register keyboard shortcuts
     event.register({'fe-nav-up', 'fe-nav-down'}, input_nav_dir, {name='search_input_nav_dir', player_index=e.player_index})
     event.register('fe-nav-confirm', input_nav_confirm, {name='search_input_nav_confirm', player_index=e.player_index})
@@ -265,6 +276,7 @@ local function search_textfield_confirmed(e)
     -- set GUI state
     gui_data.state = 'choose_result'
     gui_data.use_keyboard_nav = true
+    gui_data.selected_result = 1
   else
     self.destroy(game.get_player(e.player_index))
   end
@@ -280,7 +292,7 @@ local handlers = {
   search_elem_changed = search_elem_changed,
   search_textfield_text_changed = search_textfield_text_changed,
   search_textfield_clicked = search_textfield_clicked,
-  search_results_listbox_selection_state_changed = results_listbox_selection_state_changed,
+  search_results_listbox_item_clicked = results_listbox_item_clicked,
   search_category_button_clicked = category_button_clicked,
   search_input_nav_dir = input_nav_dir,
   search_input_nav_confirm = input_nav_confirm,
@@ -329,8 +341,9 @@ local function create_search_pane(parent, player, gui_defs)
   end
   elems.textfield = top_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', lose_focus_on_confirm=true,
                                         clear_and_focus_on_right_click=true}
-  elems.results_pane = parent.add{type='frame', name='fe_search_results_pane', style='fe_search_results_listbox_pane'}
-  elems.results_listbox = elems.results_pane.add{type='list-box', name='fe_search_results_listbox', style='fe_light_listbox'}
+  elems.results_scrollpane = parent.add{type='frame', name='fe_search_results_scrollpane', style='fe_search_results_mock_listbox_frame'}
+  elems.results_listbox = elems.results_scrollpane.add{type='scroll-pane', name='fe_search_results_mock_listbox', style='fe_mock_listbox_scrollpane',
+                                                 horizontal_scroll_policy='never', vertical_scroll_policy='always'}
   elems.actions_scrollpane = parent.add{type='scroll-pane', name='fe_search_actions_scroll', style='scroll_pane_light', direction='vertical'}
   elems.actions_scrollpane.style.margin = 4
   elems.actions_scrollpane.style.vertically_stretchable = true
@@ -364,8 +377,8 @@ function self.create(player, use_keyboard_nav, category, name)
                               gui_filters='fe_search_textfield'})
     event.on_gui_confirmed(search_textfield_confirmed, {name='search_textfield_confirmed', player_index=player.index,
                           gui_filters='fe_search_textfield'})
-    event.on_gui_selection_state_changed(results_listbox_selection_state_changed, {name='search_results_listbox_selection_state_changed',
-                                        player_index=player.index, gui_filters='fe_search_results_listbox'})
+    event.on_gui_click(results_listbox_item_clicked, {name='search_results_listbox_item_clicked', player_index=player.index,
+                                                      gui_filters='fe_mock_listbox_item_'})
     event.register({defines.events.on_gui_click, defines.events.on_gui_closed}, search_gui_closed, {name='search_gui_closed', player_index=player.index,
                    gui_filters={gui_data.base_elems.window, gui_data.base_elems.close_button}})
     gui_data.search_query = ''
@@ -381,7 +394,7 @@ function self.create(player, use_keyboard_nav, category, name)
       for i,element in ipairs(gui_data.base_elems.category_bar.children) do
         if element.style.name:match('active') then
           element.style = 'fe_tool_button_active_selected'
-          gui_data.selected_index = i
+          gui_data.selected_category = i
           break
         end
       end

@@ -87,6 +87,28 @@ styles.fe_recipe_nav_button = {
   padding = 0
 }
 
+styles.fe_mock_listbox_item = {
+  type = 'button_style',
+  parent = 'list_box_item',
+  horizontally_stretchable = 'on',
+  maximal_width = 225
+}
+
+styles.fe_mock_listbox_item_selected = {
+  type = 'button_style',
+  parent = 'list_box_item',
+  horizontally_stretchable = 'on',
+  maximal_width = 225,
+  default_font_color = button_hovered_font_color,
+  default_graphical_set = {
+    base = {position={34,17}, corner_size=8},
+  },
+  hovered_graphical_set = {
+    base = {position={34,17}, corner_size=8},
+    glow = default_glow(default_glow_color, 0.5)
+  }
+}
+
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
 
@@ -162,9 +184,10 @@ styles.fe_search_dialog_pane = {
   vertically_stretchable = 'on'
 }
 
-styles.fe_light_listbox_pane = {
+styles.fe_mock_listbox_frame = {
   type = 'frame_style',
   padding = 0,
+  width = 225,
   graphical_set = { -- inset from a light frame, but keep the dark background
     base = {
       position = {85,0},
@@ -182,20 +205,19 @@ styles.fe_light_listbox_pane = {
     overall_tiling_vertical_padding = 4,
     overall_tiling_horizontal_padding = 4
   },
-  vertically_stretchable = 'on',
-  horizontally_stretchable = 'on'
+  vertically_stretchable = 'on'
 }
 
-styles.fe_search_results_listbox_pane = {
+styles.fe_search_results_mock_listbox_frame = {
   type = 'frame_style',
-  parent = 'fe_light_listbox_pane',
-  margin = 4
+  parent = 'fe_mock_listbox_frame',
+  margin = 4,
+  height = 196
 }
 
-styles.fe_recipe_listbox_pane = {
+styles.fe_recipe_mock_listbox_frame = {
   type = 'frame_style',
-  parent = 'fe_light_listbox_pane',
-  minimal_width = 225,
+  parent = 'fe_mock_listbox_frame',
   height = 280
 }
 
@@ -240,23 +262,12 @@ styles.fe_recipe_icon = {
 }
 
 -- -----------------------------------------------------------------------------
--- LISTBOX STYLES
+-- LABEL STYLES
 
-styles.fe_light_listbox = {
-  type = 'list_box_style',
-  parent = 'list_box',
-  scroll_pane_style = { -- invisible scroll pane
-    type = 'scroll_pane_style',
-    parent = 'list_box_scroll_pane',
-    graphical_set = {},
-    background_graphical_set = {},
-    vertically_stretchable = 'on'
-  },
-  item_style = {
-    type = 'button_style',
-    parent = 'list_box_item',
-    horizontally_stretchable = 'on'
-  }
+styles.fe_mock_listbox_label = {
+  type = 'label_style',
+  parent = 'caption_label',
+  left_padding = 2
 }
 
 -- -----------------------------------------------------------------------------
@@ -273,6 +284,19 @@ styles.fe_content_scroll_pane = {
   vertical_flow_style = {
     type = 'vertical_flow_style',
     padding = 8
+  }
+}
+
+styles.fe_mock_listbox_scrollpane = {
+  type = 'scroll_pane_style',
+  padding = 0,
+  extra_padding_when_activated = 0,
+  graphical_set = {},
+  background_graphical_set = {},
+  horizontally_stretchable = 'on',
+  vertical_flow_style = {
+    type = 'vertical_flow_style',
+    vertical_spacing = 0,
   }
 }
 
