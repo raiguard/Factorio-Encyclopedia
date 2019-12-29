@@ -9,16 +9,16 @@ styles.fe_category_button = {
   horizontally_stretchable = 'on'
 }
 
-styles.fe_button_selected = {
-  type = 'button_style',
-  parent = 'button',
-  default_font_color = button_hovered_font_color,
-  default_graphical_set = {
-    base = {position = {34,17}, corner_size=8},
-    shadow = default_dirt,
-    -- glow = default_glow(default_glow_color, 0.5)
-  }
-}
+-- styles.fe_button_selected = {
+--   type = 'button_style',
+--   parent = 'button',
+--   default_font_color = button_hovered_font_color,
+--   default_graphical_set = {
+--     base = {position = {34,17}, corner_size=8},
+--     shadow = default_dirt,
+--     -- glow = default_glow(default_glow_color, 0.5)
+--   }
+-- }
 
 styles.fe_button_active = {
   type = 'button_style',
@@ -39,33 +39,33 @@ styles.fe_button_active = {
   }
 }
 
-styles.fe_button_active_selected = {
-  type = 'button_style',
-  parent = 'button',
-  default_font_color = button_hovered_font_color,
-  default_graphical_set = {
-      base = {position={369,17}, corner_size=8},
-      shadow = default_dirt
-  },
-  hovered_font_color = button_hovered_font_color,
-  hovered_graphical_set = {
-      base = {position={369,17}, corner_size=8},
-      shadow = default_dirt,
-      glow = default_glow(default_glow_color, 0.5)
-  },
-  clicked_font_color = button_hovered_font_color,
-  clicked_graphical_set = {
-      base = {position={352,17}, corner_size=8},
-      shadow = default_dirt
-  }
-}
+-- styles.fe_button_active_selected = {
+--   type = 'button_style',
+--   parent = 'button',
+--   default_font_color = button_hovered_font_color,
+--   default_graphical_set = {
+--       base = {position={369,17}, corner_size=8},
+--       shadow = default_dirt
+--   },
+--   hovered_font_color = button_hovered_font_color,
+--   hovered_graphical_set = {
+--       base = {position={369,17}, corner_size=8},
+--       shadow = default_dirt,
+--       glow = default_glow(default_glow_color, 0.5)
+--   },
+--   clicked_font_color = button_hovered_font_color,
+--   clicked_graphical_set = {
+--       base = {position={352,17}, corner_size=8},
+--       shadow = default_dirt
+--   }
+-- }
 
-styles.fe_tool_button_selected = {
-  type = 'button_style',
-  parent = 'fe_button_selected',
-  padding = 2,
-  size = 28
-}
+-- styles.fe_tool_button_selected = {
+--   type = 'button_style',
+--   parent = 'fe_button_selected',
+--   padding = 2,
+--   size = 28
+-- }
 
 styles.fe_tool_button_active = {
   type = 'button_style',
@@ -74,18 +74,12 @@ styles.fe_tool_button_active = {
   size = 28
 }
 
-styles.fe_tool_button_active_selected = {
-  type = 'button_style',
-  parent = 'fe_button_active_selected',
-  padding = 2,
-  size = 28
-}
-
-styles.fe_recipe_nav_button = {
-  type = 'button_style',
-  parent = 'tool_button',
-  padding = 0
-}
+-- styles.fe_tool_button_active_selected = {
+--   type = 'button_style',
+--   parent = 'fe_button_active_selected',
+--   padding = 2,
+--   size = 28
+-- }
 
 styles.fe_mock_listbox_item = {
   type = 'button_style',
@@ -96,28 +90,28 @@ styles.fe_mock_listbox_item = {
   right_padding = 4
 }
 
-styles.fe_mock_listbox_item_selected = {
-  type = 'button_style',
-  parent = 'fe_mock_listbox_item',
-  default_font_color = button_hovered_font_color,
-  default_graphical_set = {
-    base = {position={34,17}, corner_size=8},
-  },
-  hovered_graphical_set = {
-    base = {position={34,17}, corner_size=8},
-    glow = default_glow(default_glow_color, 0.5)
-  }
-}
+-- styles.fe_mock_listbox_item_selected = {
+--   type = 'button_style',
+--   parent = 'fe_mock_listbox_item',
+--   default_font_color = button_hovered_font_color,
+--   default_graphical_set = {
+--     base = {position={34,17}, corner_size=8},
+--   },
+--   hovered_graphical_set = {
+--     base = {position={34,17}, corner_size=8},
+--     glow = default_glow(default_glow_color, 0.5)
+--   }
+-- }
 
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
 
-styles.fe_invisible_horizontal_pusher = {
+styles.fe_horizontal_pusher = {
   type = 'empty_widget_style',
   horizontally_stretchable = 'on'
 }
 
-styles.fe_invisible_vertical_pusher = {
+styles.fe_vertical_pusher = {
   type = 'empty_widget_style',
   vertically_stretchable = 'on'
 }
@@ -169,20 +163,20 @@ styles.fe_toolbar_left = {
   right_padding = 1
 }
 
-styles.fe_search_content_pane = {
-  type = 'frame_style',
-  parent = 'inside_deep_frame',
-  horizontal_flow_style = {
-    type = 'horizontal_flow_style',
-    horizontal_spacing = 0
-  }
-}
+-- styles.fe_search_content_pane = {
+--   type = 'frame_style',
+--   parent = 'inside_deep_frame',
+--   horizontal_flow_style = {
+--     type = 'horizontal_flow_style',
+--     horizontal_spacing = 0
+--   }
+-- }
 
-styles.fe_search_dialog_pane = {
-  type = 'frame_style',
-  parent = 'window_content_frame',
-  vertically_stretchable = 'on'
-}
+-- styles.fe_search_dialog_pane = {
+--   type = 'frame_style',
+--   parent = 'window_content_frame',
+--   vertically_stretchable = 'on'
+-- }
 
 styles.fe_mock_listbox_frame = {
   type = 'frame_style',
@@ -208,31 +202,26 @@ styles.fe_mock_listbox_frame = {
   vertically_stretchable = 'on'
 }
 
-styles.fe_search_results_mock_listbox_frame = {
-  type = 'frame_style',
-  parent = 'fe_mock_listbox_frame',
-  margin = 4,
-  height = 196
-}
+-- styles.fe_search_results_mock_listbox_frame = {
+--   type = 'frame_style',
+--   parent = 'fe_mock_listbox_frame',
+--   margin = 4,
+--   height = 196
+-- }
 
-styles.fe_recipe_mock_listbox_frame = {
-  type = 'frame_style',
-  parent = 'fe_mock_listbox_frame',
-  height = 224
-}
+-- styles.fe_recipe_mock_listbox_frame = {
+--   type = 'frame_style',
+--   parent = 'fe_mock_listbox_frame',
+--   height = 224
+-- }
 
-styles.fe_window_content_frame = {
+styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target work
   type = 'frame_style',
-  parent = 'window_content_frame',
-  padding = 8,
-  horizontal_flow_style = {
-    type = 'horizontal_flow_style',
-    horizontal_spacing = 8
-  },
-  vertical_flow_style = {
-    type = 'vertical_flow_style',
-    vertical_spacing = 8
-  }
+  margin = 0,
+  padding = 0,
+  graphical_set = {},
+  background_graphical_set = {},
+  use_header_filler = false
 }
 
 -- -----------------------------------------------------------------------------
@@ -254,7 +243,7 @@ styles.fe_vertically_centered_flow = {
 -- -----------------------------------------------------------------------------
 -- IMAGE STYLES
 
-styles.fe_recipe_icon = {
+styles.fe_object_icon = {
   type = 'image_style',
   stretch_image_to_widget_size = true,
   size = 28,
@@ -273,21 +262,6 @@ styles.fe_mock_listbox_label = {
 -- -----------------------------------------------------------------------------
 -- SCROLL PANE STYLES
 
-styles.fe_content_scroll_pane = {
-  type = 'scroll_pane_style',
-  parent = 'scroll_pane',
-  background_graphical_set = {
-    base = {
-      center = {position={76,8}, size=1}
-    },
-    shadow = default_shadow
-  },
-  vertical_flow_style = {
-    type = 'vertical_flow_style',
-    padding = 8
-  }
-}
-
 styles.fe_mock_listbox_scrollpane = {
   type = 'scroll_pane_style',
   padding = 0,
@@ -305,10 +279,41 @@ styles.fe_mock_listbox_scrollpane = {
 }
 
 -- -----------------------------------------------------------------------------
+-- TABBED PANE STYLES
+
+styles.fe_search_tabbed_pane = {
+  type = 'tabbed_pane_style',
+  vertical_spacing = 0,
+  padding = 0,
+  tab_content_frame = {
+    type = 'frame_style',
+    parent = 'dialog_frame',
+    top_padding = 8
+  },
+  tab_container = {
+    type = 'horizontal_flow_style',
+    left_padding = 0,
+    right_padding = 0,
+    horizontal_spacing = 0
+  }
+}
+
+styles.fe_search_tab = {
+  type = "tab_style",
+  parent = "tab",
+  height = 32,
+  top_padding = 6,
+  bottom_padding = 6,
+  selected_graphical_set = {
+    base={position={448,103}, corner_size=8},
+    shadow = tab_glow(default_shadow_color, 0.5)
+  }
+}
+
+-- -----------------------------------------------------------------------------
 -- TEXTFIELD STYLES
 
 styles.fe_search_textfield = {
   type = 'textbox_style',
-  width = 180,
-  right_margin = 4
+  width = 180
 }
