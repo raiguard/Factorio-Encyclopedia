@@ -342,8 +342,7 @@ local function create_search_pane(parent, player, gui_defs)
   elems.textfield = top_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', lose_focus_on_confirm=true,
                                         clear_and_focus_on_right_click=true}
   elems.results_scrollpane = parent.add{type='frame', name='fe_search_results_scrollpane', style='fe_search_results_mock_listbox_frame'}
-  elems.results_listbox = elems.results_scrollpane.add{type='scroll-pane', name='fe_search_results_mock_listbox', style='fe_mock_listbox_scrollpane',
-                                                 horizontal_scroll_policy='never', vertical_scroll_policy='always'}
+  elems.results_listbox = elems.results_scrollpane.add{type='scroll-pane', name='fe_search_results_mock_listbox', style='fe_mock_listbox_scrollpane'}
   elems.actions_scrollpane = parent.add{type='scroll-pane', name='fe_search_actions_scroll', style='scroll_pane_light', direction='vertical'}
   elems.actions_scrollpane.style.margin = 4
   elems.actions_scrollpane.style.vertically_stretchable = true

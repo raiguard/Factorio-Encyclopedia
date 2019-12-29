@@ -218,7 +218,7 @@ styles.fe_search_results_mock_listbox_frame = {
 styles.fe_recipe_mock_listbox_frame = {
   type = 'frame_style',
   parent = 'fe_mock_listbox_frame',
-  height = 280
+  height = 224
 }
 
 styles.fe_window_content_frame = {
@@ -279,7 +279,8 @@ styles.fe_content_scroll_pane = {
   background_graphical_set = {
     base = {
       center = {position={76,8}, size=1}
-    }
+    },
+    shadow = default_shadow
   },
   vertical_flow_style = {
     type = 'vertical_flow_style',
@@ -291,12 +292,15 @@ styles.fe_mock_listbox_scrollpane = {
   type = 'scroll_pane_style',
   padding = 0,
   extra_padding_when_activated = 0,
+  -- 0.18 (hopefully...)
+  extra_right_padding_when_activated = -12,
   graphical_set = {},
   background_graphical_set = {},
-  horizontally_stretchable = 'on',
   vertical_flow_style = {
     type = 'vertical_flow_style',
     vertical_spacing = 0,
+    vertically_stretchable = 'on',
+    horizontally_stretchable = 'on'
   }
 }
 
