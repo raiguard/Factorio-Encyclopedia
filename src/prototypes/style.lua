@@ -91,14 +91,14 @@ styles.fe_mock_listbox_item = {
   type = 'button_style',
   parent = 'list_box_item',
   horizontally_stretchable = 'on',
-  maximal_width = 225
+  maximal_width = 225,
+  left_padding = 4,
+  right_padding = 4
 }
 
 styles.fe_mock_listbox_item_selected = {
   type = 'button_style',
-  parent = 'list_box_item',
-  horizontally_stretchable = 'on',
-  maximal_width = 225,
+  parent = 'fe_mock_listbox_item',
   default_font_color = button_hovered_font_color,
   default_graphical_set = {
     base = {position={34,17}, corner_size=8},

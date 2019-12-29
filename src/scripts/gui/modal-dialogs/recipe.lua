@@ -40,10 +40,10 @@ function self.create(player, parent, action_data, content_data)
   -- ITEMS
   local items_flow = content_scrollpane.add{type='flow', name='fe_items_flow', direction='horizontal'}
   items_flow.style.horizontal_spacing = 8
-  -- ingredients
+  -- ingredients / products
   for _,type in ipairs{'ingredients', 'products'} do
     local item_flow = items_flow.add{type='flow', name='fe_'..type..'_flow', direction='vertical'}
-    item_flow.add{type='label', name='fe_items_label', style='caption_label', caption={'fe-gui-recipe.'..type..'-label-caption'}}
+    item_flow.add{type='label', name='fe_items_label', style='fe_mock_listbox_label', caption={'fe-gui-recipe.'..type..'-label-caption'}}
     local items_pane = item_flow.add{type='frame', name='fe_items_pane', style='fe_recipe_mock_listbox_frame'}
     local items_listbox = items_pane.add{type='scroll-pane', name='fe_items_listbox', style='fe_mock_listbox_scrollpane'}
     for i,item in ipairs(recipe.prototype[type]) do
@@ -52,9 +52,23 @@ function self.create(player, parent, action_data, content_data)
         '[img='..item.type..'/'..item.name..']  '..item.amount..'x ',
         encyclopedia[item.type][item.name].prototype.localised_name
       }
-      items_listbox.add{type='button', name='fe_items_listbox_item_'..i, style='fe_mock_listbox_item', caption=caption}
+      items_listbox.add{type='button', name='fe_items_listbox_item_'..i, style='fe_mock_listbox_item', caption=caption,
+                        tooltip={'fe-gui-recipe.item-listbox-item-tooltip', caption}}
     end
     gui_data[type..'_listbox'] = items_listbox
+  end
+
+  local lower_flow = content_scrollpane.add{type='flow', name='fe_lower_flow', direction='horizontal'}
+  lower_flow.style.horizontal_spacing = 8
+  -- made in
+  local made_in_flow = lower_flow.add{type='flow', name='fe_made_in_flow', direction='vertical'}
+  made_in_flow.add{type='label', name='fe_listbox_label', style='fe_mock_listbox_label', caption={'fe-gui-recipe.made-in-label-caption'}}
+  local made_in_listbox = made_in_flow.add{type='frame', name='fe_made_in_pane', style='fe_recipe_mock_listbox_frame'}
+  .add{type='scroll-pane', name='fe_made_in_listbox', style='fe_mock_listbox_scrollpane'}
+  for i,name in ipairs(recipe.made_in) do
+    local entity = encyclopedia.entity[name]
+    local caption = {'', '[img=entity/'..name..']  ', entity.prototype.localised_name}
+    made_in_listbox.add{type='button', name='fe_made_in_item_'..i, style='fe_mock_listbox_item', caption=caption, tooltip=caption}
   end
   gui_data.filename = 'recipe'
   return gui_data
