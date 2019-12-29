@@ -221,11 +221,11 @@ event.on_gui_click(function(e)
 end, {gui_filters='fe_mod_gui_button'})
 
 event.register(open_search_gui_event, function(e)
-  search_gui.create(game.get_player(e.player_index), e.use_keyboard_nav, e.category, e.name)
+  search_gui.protected_open(game.get_player(e.player_index), e.options)
 end)
 
 event.register(open_modal_dialog_event, function(e)
-  modal_dialog.create(game.get_player(e.player_index), e.category, e.obj_name, e.action)
+  game.print('Create '..e.category..' dialog for '..e.object_name)
 end)
 
 -- DEBUGGING

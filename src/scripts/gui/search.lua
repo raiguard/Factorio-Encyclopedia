@@ -7,6 +7,7 @@ local event = require('lualib/event')
 -- objects
 local self = {}
 local handlers = {
+  common = {},
   search = {},
   history = {}
 }
@@ -21,8 +22,23 @@ local function register_gui_handlers(player_index, prefix, t)
   end
 end
 
+-- deregisters GUI events in a more compact form
+local function deregister_gui_handlers(player_index, prefix)
+  for name,handler in pairs(handlers[prefix]) do
+    if event.is_registered(prefix..'_'..name, player_index) then
+      event.deregister_conditional(handler, {name=prefix..'_'..name, player_index=player_index})
+    end
+  end
+end
+
 -- -----------------------------------------------------------------------------
 -- GUI EVENT HANDLERS
+
+-- COMMON
+
+function handlers.common.gui_closed(e)
+  self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+end
 
 -- SEARCH
 
@@ -37,9 +53,10 @@ function handlers.search.category_button_clicked(e)
 end
 
 function handlers.search.choose_elem_button_elem_changed(e)
-  local gui_data = global.players[e.player_index].gui
-  local search_data = gui_data.search
-  game.print(serpent.block(e))
+  local category = e.element.elem_type
+  local object_name = e.element.elem_value
+  self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+  event.raise(open_modal_dialog_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
 
 function handlers.search.textfield_text_changed(e)
@@ -68,7 +85,12 @@ end
 
 -- HISTORY
 
+
+
+-- ON LOAD
+
 event.on_load(function()
+  event.load_conditional_handlers(handlers.common)
   event.load_conditional_handlers(handlers.search)
   event.load_conditional_handlers(handlers.history)
 end)
@@ -80,8 +102,15 @@ function self.open(player, options, player_table)
   options = options or {}
   player_table = player_table or global.players[player.index]
   local gui_data = {}
+  --
+  -- COMMON
+  --
   gui_data.window = player.gui.screen.add{type='frame', name='fe_search_window', style='fe_empty_frame'} -- needed for drag_target to work
   gui_data.tabbed_pane = gui_data.window.add{type='tabbed-pane', name='fe_search_window', style='fe_search_tabbed_pane'}
+  -- REGISTER HANDLERS
+  register_gui_handlers(player.index, 'common', {
+    {defines.events.on_gui_closed, {name='gui_closed', gui_filters=gui_data.window}}
+  })
   --
   -- SEARCH
   --
@@ -154,11 +183,13 @@ function self.open(player, options, player_table)
   gui_data.state = 'search'
   player_table.gui.search = gui_data
   gui_data.window.force_auto_center()
+  player.opened = gui_data.window
   -- focus search textfield (we must do this last to keep focus)
   gui_data.search.textfield.select_all()
   gui_data.search.textfield.focus()
 end
 
+-- will prevent opening the GUI if dictionary translation is not finished
 function self.protected_open(player, options)
   local player_table = global.players[player.index]
   if player_table.flags.allow_open_gui then
@@ -169,14 +200,18 @@ function self.protected_open(player, options)
   end
 end
 
-function self.close(player)
-
+function self.close(player, gui_data)
+  gui_data.search.window.destroy()
+  deregister_gui_handlers(player.index, 'common')
+  deregister_gui_handlers(player.index, 'search')
+  deregister_gui_handlers(player.index, 'history')
+  gui_data.search = nil
 end
 
 function self.toggle(player, options)
   local gui_data = global.players[player.index].gui
   if gui_data.search then
-    self.close(player)
+    self.close(player, gui_data)
   else
     self.protected_open(player, options)
   end
@@ -191,6 +226,7 @@ function self.reset_search_pane(player_table)
   search_data.textfield.text = player_table.dictionary.other.search[1]..' '..player_table.dictionary.category_name[search_data.category][1]..'...'
   search_data.textfield.select_all()
   search_data.textfield.focus()
+  gui_data.state = 'search'
 end
 
 -- -----------------------------------------------------------------------------
