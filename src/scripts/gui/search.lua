@@ -80,7 +80,7 @@ local function action_button_clicked(e)
   if gui_data.modal then
     modal_dialog.destroy(gui_data, e.player_index)
   end
-  gui_data.modal = modal_dialog.create(player, self_data.category, elem_value, action)
+  modal_dialog.create(player, self_data.category, elem_value, action)
 end
 
 local function search_elem_changed(e)

@@ -54,8 +54,11 @@ function self.create(player, parent, action_data, content_data)
     local items_pane = item_flow.add{type='frame', name='fe_items_pane', style='fe_recipe_items_listbox_pane'}
     gui_data[type..'_listbox'] = items_pane.add{type='list-box', name='fe_items_listbox', style='fe_light_listbox', items=items}
   end
+  gui_data.content_name = 'recipe-usage'
   return gui_data
 end
+
+function self.get_handlers() return handlers end
 
 -- -----------------------------------------------------------------------------
 

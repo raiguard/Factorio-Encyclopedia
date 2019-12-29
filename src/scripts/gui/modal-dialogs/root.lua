@@ -66,20 +66,21 @@ end)
 function modal_dialog.create(player, category, name, action)
   -- destroy existing dialog, if there is one
   if global.players[player.index].gui.modal then
-    modal_dialog.destroy(global.players[player.index].gui.modal, player.index)
+    modal_dialog.destroy(global.players[player.index].gui, player.index)
   end
+  local base_data = {}
   local encyclopedia = global.encyclopedia
-  local window = player.gui.screen.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
-  window.enabled = false
+  base_data.window = player.gui.screen.add{type='frame', name='fe_modal_window', style='dialog_frame', direction='vertical'}
+  base_data.window.enabled = false
   -- titlebar
-  local titlebar = window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
+  local titlebar = base_data.window.add{type='flow', name='fe_modal_titlebar', style='fe_titlebar_flow', direction='horizontal'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_backward', style='close_button', sprite='fe_nav_backward',
                hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
   titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_nav_forward', style='close_button', sprite='fe_nav_forward',
                hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}.enabled = false
   titlebar.add{type='label', name='fe_modal_titlebar_label', style='frame_title',
                caption={'fe-gui-modal.titlebar-label-caption-'..action, encyclopedia[category][name].prototype.localised_name}}.style.left_padding = 7
-  titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='fe_titlebar_draggable_space'}.drag_target = window
+  titlebar.add{type='empty-widget', name='fe_modal_titlebar_pusher', style='fe_titlebar_draggable_space'}.drag_target = base_data.window
   local search_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_search', style='close_button', sprite='fe_search',
                                      hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark', tooltip={'fe-gui-modal.titlebar-search-button-tooltip'}}
   local close_button = titlebar.add{type='sprite-button', name='fe_modal_titlebar_button_close', style='close_button', sprite='utility/close_white',
@@ -97,26 +98,25 @@ function modal_dialog.create(player, category, name, action)
     content = content(name, encyclopedia)
   end
   -- create window content
-  local content_data = content_modules[content.name].create(player, window, {category=category, name=name, action=action}, content.data or {})
+  local content_data = content_modules[content.name].create(player, base_data.window, {category=category, name=name, action=action}, content.data or {})
   -- screen
-  window.force_auto_center()
-  player.opened = window
+  base_data.window.force_auto_center()
+  player.opened = base_data.window
   -- register events
   event.on_gui_click(search_button_clicked, {name='modal_search_button_clicked', player_index=player.index, gui_filters=search_button})
   event.register({defines.events.on_gui_click, defines.events.on_gui_closed}, modal_dialog_closed,
-                 {name='modal_dialog_closed', player_index=player.index, gui_filters={window, close_button}})
-
-  return {window=window, titlebar=titlebar}
+                 {name='modal_dialog_closed', player_index=player.index, gui_filters={base_data.window, close_button}})
+  global.players[player.index].gui.modal = {base=base_data, content=content_data}
 end
 
 function modal_dialog.destroy(gui_data, player_index)
-  for name,handler in pairs(handlers) do
-    local registered = event.is_registered(name, player_index)
-    if registered then
+  local breakpoint
+  for name,handler in pairs(util.merge{content_modules[gui_data.modal.content.filename].get_handlers(), handlers}) do
+    if event.is_registered(name, player_index) then
       event.deregister_conditional(handler, {name=name, player_index=player_index})
     end
   end
-  gui_data.modal.window.destroy()
+  gui_data.modal.base.window.destroy()
   gui_data.modal = nil
 end
 

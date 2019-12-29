@@ -14,6 +14,7 @@ local serialise_localised_string = translation.serialise_localised_string
 
 -- modules
 local search_gui = require('scripts/gui/search')
+local modal_dialog = require('scripts/gui/modal-dialogs/root')
 
 -- globals
 open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
@@ -198,6 +199,10 @@ end, {gui_filters='fe_mod_gui_button'})
 
 event.register(open_search_gui_event, function(e)
   search_gui.create(game.get_player(e.player_index), e.use_keyboard_nav, e.category, e.name)
+end)
+
+event.register(open_modal_dialog_event, function(e)
+  modal_dialog.create(game.get_player(e.player_index), e.category, e.obj_name, e.action)
 end)
 
 -- DEBUGGING

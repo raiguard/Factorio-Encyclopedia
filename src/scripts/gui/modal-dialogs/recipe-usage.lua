@@ -1,4 +1,35 @@
+-- -------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- RECIPE USAGE DIALOG
+
+-- dependencies
+local event = require('lualib/event')
+
 local self = {}
+
+-- -----------------------------------------------------------------------------
+-- GUI EVENT HANDLERS
+
+local function as_ingredient_recipe_button_clicked(e)
+  local _,_,name = e.element.caption[2]:find('^.*/(.*)%].*$') -- extract object names from rich text definition
+  event.raise(open_modal_dialog_event, {player_index=e.player_index, category='recipe', obj_name=name, action='view_recipe'})
+end
+
+local function as_product_recipe_button_clicked(e)
+  local _,_,name = e.element.caption[2]:find('^.*/(.*)%].*$') -- extract object names from rich text definition
+  event.raise(open_modal_dialog_event, {player_index=e.player_index, category='recipe', name=name, action='view_recipe'})
+end
+
+local handlers = {
+  recipe_usage_as_ingredient_recipe_button_clicked = as_ingredient_recipe_button_clicked,
+  recipe_usage_as_product_recipe_button_clicked = as_product_recipe_button_clicked
+}
+
+event.on_load(function()
+  event.load_conditional_handlers(handlers)
+end)
+
+-- -----------------------------------------------------------------------------
+-- OBJECT
 
 function self.create(player, parent, action_data, content_data)
   local encyclopedia = global.encyclopedia
@@ -26,7 +57,15 @@ function self.create(player, parent, action_data, content_data)
     end
     gui_data[type..'_listbox'] = recipes_listbox
   end
+  -- event handlers
+  event.on_gui_click(as_ingredient_recipe_button_clicked, {name='recipe_usage_as_ingredient_recipe_button_clicked', player_index=player.index,
+                 gui_filters='fe_ingredient_listbox_item_'})
+  event.on_gui_click(as_product_recipe_button_clicked, {name='recipe_usage_as_product_recipe_button_clicked', player_index=player.index,
+                 gui_filters='fe_product_listbox_item_'})
+  gui_data.filename = 'recipe-usage'
   return gui_data
 end
+
+function self.get_handlers() return handlers end
 
 return self
