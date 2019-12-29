@@ -121,6 +121,15 @@ local function build_encyclopedia()
     translation_data.category_name.data[serialised_category] = category
     translation_data.category_name.strings[#translation_data.category_name.strings+1] = {'fe-gui-general.category-'..category}
   end
+  -- other
+  translation_data.other = {
+    data = {
+      [serialise_localised_string{'gui.search'}] = 'search'
+    },
+    strings = {
+      {'gui.search'}
+    }
+  }
   global.__translation.translation_data = translation_data
 end
 
@@ -194,7 +203,7 @@ event.register(translation.finish_event, function(e)
   local player_table = global.players[e.player_index]
   player_table.dictionary[e.dictionary_name] = e.dictionary
   player_table.search[e.dictionary_name] = e.searchable
-  if table_size(player_table.dictionary) == 9 then
+  if table_size(player_table.dictionary) == 10 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
       player_table.flags.tried_to_open_gui = nil

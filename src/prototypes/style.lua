@@ -90,6 +90,30 @@ styles.fe_mock_listbox_item = {
   right_padding = 4
 }
 
+styles.fe_mock_listbox_item_active = {
+  type = 'button_style',
+  parent = 'fe_mock_listbox_item',
+  -- emulate text_offset
+  top_padding = 1,
+  bottom_padding = -1,
+  -- graphical set
+  default_font_color = button_hovered_font_color,
+  default_graphical_set = {
+    base = {position={225,17}, corner_size=8},
+    shadow = default_dirt
+  },
+  hovered_font_color = button_hovered_font_color,
+  hovered_graphical_set = {
+    base = {position={369,17}, corner_size=8},
+    shadow = default_dirt
+  },
+  clicked_font_color = button_hovered_font_color,
+  clicked_graphical_set = {
+    base = {position={352,17}, corner_size=8},
+    shadow = default_dirt
+  }
+}
+
 -- styles.fe_mock_listbox_item_selected = {
 --   type = 'button_style',
 --   parent = 'fe_mock_listbox_item',
@@ -163,21 +187,6 @@ styles.fe_toolbar_left = {
   right_padding = 1
 }
 
--- styles.fe_search_content_pane = {
---   type = 'frame_style',
---   parent = 'inside_deep_frame',
---   horizontal_flow_style = {
---     type = 'horizontal_flow_style',
---     horizontal_spacing = 0
---   }
--- }
-
--- styles.fe_search_dialog_pane = {
---   type = 'frame_style',
---   parent = 'window_content_frame',
---   vertically_stretchable = 'on'
--- }
-
 styles.fe_mock_listbox_frame = {
   type = 'frame_style',
   padding = 0,
@@ -202,18 +211,24 @@ styles.fe_mock_listbox_frame = {
   vertically_stretchable = 'on'
 }
 
--- styles.fe_search_results_mock_listbox_frame = {
---   type = 'frame_style',
---   parent = 'fe_mock_listbox_frame',
---   margin = 4,
---   height = 196
--- }
-
--- styles.fe_recipe_mock_listbox_frame = {
---   type = 'frame_style',
---   parent = 'fe_mock_listbox_frame',
---   height = 224
--- }
+styles.fe_history_mock_listbox_frame = {
+  type = 'frame_style',
+  parent = 'fe_mock_listbox_frame',
+  height = 224,
+  width = 279,
+  graphical_set = {
+    base = {
+      position = {17,0},
+      corner_size = 8,
+      center = {position={42,8}, size=1},
+      top = {},
+      left_top = {},
+      right_top = {},
+      draw_type = 'outer'
+    },
+    shadow = default_inner_shadow
+  }
+}
 
 styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target work
   type = 'frame_style',
@@ -236,8 +251,26 @@ styles.fe_titlebar_flow = {
 }
 
 styles.fe_vertically_centered_flow = {
-  type='horizontal_flow_style',
+  type = 'horizontal_flow_style',
   vertical_align = 'center'
+}
+
+styles.fe_search_flow = {
+  type = 'vertical_flow_style',
+  padding = 8,
+  vertical_spacing = 8
+}
+
+styles.fe_search_input_flow = {
+  type = 'horizontal_flow_style',
+  parent = 'fe_vertically_centered_flow',
+  horizontal_spacing = 6
+}
+
+styles.fe_paddingless_flow = {
+  type = 'horizontal_flow_style',
+  margin = 0,
+  padding = 0
 }
 
 -- -----------------------------------------------------------------------------
