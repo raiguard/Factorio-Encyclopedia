@@ -89,7 +89,7 @@ function handlers.search.choose_elem_button_elem_changed(e)
   local category = e.element.elem_type
   local object_name = e.element.elem_value
   self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_search'})
 end
 
 -- update search results list
@@ -196,7 +196,7 @@ function handlers.search.result_selection_changed(e)
   local gui_data = global.players[e.player_index].gui
   local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
   self.close(game.get_player(e.player_index), gui_data)
-  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_search'})
 end
 
 -- SEARCH NAVIGATION
@@ -251,7 +251,7 @@ end
 function handlers.history.listbox_selection_changed(e)
   local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[.*%].*%[img=(.*)/(.*)%].*$')
   self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_history'})
 end
 
 -- ON LOAD

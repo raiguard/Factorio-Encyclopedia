@@ -5,7 +5,9 @@
 local event = require('lualib/event')
 
 -- locals
+local string_lower = string.lower
 local table_insert = table.insert
+local table_remove = table.remove
 
 -- objects
 local self = {}
@@ -39,7 +41,16 @@ end
 -- GUI EVENT HANDLERS
 
 function handlers.common.back_button_clicked(e)
-
+  local player_table = global.players[e.player_index]
+  local session_history = player_table.history.session
+  local back_obj = session_history[session_history.position+1]
+  if back_obj.source then
+    self.close(game.get_player(e.player_index), player_table.gui)
+    event.raise(reopen_source_event, {player_index=e.player_index, source=back_obj.source})
+  else
+    session_history.position = session_history.position + 1
+    -- update content
+  end
 end
 
 function handlers.common.forward_button_clicked(e)
@@ -62,10 +73,12 @@ end)
 -- -----------------------------------------------------------------------------
 -- OBJECT
 
-function self.open(player, category, name, options)
+function self.open(player, category, name, source, player_table)
   if not category or not name then error('Cannot open info GUI without info!') end
-  local player_table = options.player_table or global.players[player.index]
-  local encyclopedia = global.encyclopedia[category]
+  local player_table = player_table or global.players[player.index]
+  local dictionary = player_table.dictionary
+  local translations = dictionary[category].translations
+  -- local encyclopedia = global.encyclopedia[category]
   local gui_data = {}
   --
   -- COMMON
@@ -90,7 +103,7 @@ function self.open(player, category, name, options)
     common.background_pane = common.window.add{type='frame', name='fe_background_pane', style='window_content_frame_packed', direction='vertical'}
     common.info_bar = common.background_pane.add{type='frame', name='fe_info_bar', style='fe_toolbar_frame', direciton='horizontal'}
     common.info_bar.add{type='sprite', name='fe_object_icon', style='fe_object_icon', sprite=category..'/'..name}
-    common.info_bar.add{type='label', name='fe_object_name', style='subheader_caption_label', caption=encyclopedia[name].prototype.localised_name}
+    common.info_bar.add{type='label', name='fe_object_name', style='subheader_caption_label', caption=translations[name]}
     -- CONTENT SCROLLPANE
     common.content_scrollpane = common.background_pane.add{type='scroll-pane', name='fe_content_scrollpane', style='scroll_pane_under_subheader'}
     -- dummy content
@@ -122,15 +135,44 @@ function self.open(player, category, name, options)
   -- SEARCH HISTORY
   --
   table_insert(player_table.history.overall, 1, {category=category, name=name})
+  local session_history = player_table.history.session
+  if source then
+    -- reset session history
+    player_table.history.session = {position=1, [1]={category=category, name=name}, [2]={source=source}}
+    session_history = player_table.history.session
+  else
+    -- modify session history
+    if session_history.position > 1 then
+      for i=1,#session_history.position - 1 do
+        table_remove(session_history, 1)
+      end
+      session_history.position = 1
+    end
+    table_insert(session_history, 1, {category=category, name=name})
+  end
+  -- set navigation button properties
+  local forward_button = gui_data.common_elems.forward_button
+  if session_history.position > 1 then
+    forward_button.enabled = true
+    local forward_obj = session_history[session_history.position-1]
+    forward_button.tooltip = {'fe-gui.forward-to', string_lower(dictionary[forward_obj.category].translations[forward_obj.name])}
+  else
+    forward_button.enabled = false
+  end
+  local back_button = gui_data.common_elems.back_button
+  local back_obj = session_history[session_history.position+1]
+  if back_obj.source then
+    back_button.tooltip = {'fe-gui.back-to', {'fe-remote-interface.history-source-name-'..back_obj.source}}
+  else
+    back_button.tooltip = {'fe-gui.back-to', string_lower(dictionary[back_obj.category].translations[back_obj.name])}
+  end
 end
 
 -- will prevent opening the GUI if dictionary translation is not finished
-function self.protected_open(player, category, name, options)
+function self.protected_open(player, category, name, source)
   local player_table = global.players[player.index]
   if player_table.flags.allow_open_gui then
-    options = options or {}
-    options.player_table = player_table
-    self.open(player, category, name, options)
+    self.open(player, category, name, source, player_table)
   else
     player.print{'fe-chat-message.translation-not-finished'}
     player_table.flags.tried_to_open_gui = true
@@ -143,12 +185,12 @@ function self.close(player, gui_data)
   gui_data.info = nil
 end
 
-function self.toggle(player, options)
+function self.toggle(player, category, name, source)
   local gui_data = global.players[player.index].gui
   if gui_data.search then
     self.close(player, gui_data)
   else
-    self.protected_open(player, options)
+    self.protected_open(player, category, name, source)
   end
 end
 

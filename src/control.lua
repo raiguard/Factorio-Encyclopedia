@@ -16,6 +16,7 @@ local table_sort = table.sort
 -- globals
 open_info_gui_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
 open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
+reopen_source_event = event.generate_id('reopen_source') -- used internally and for the remote interface
 categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
 
 -- modules
@@ -149,8 +150,8 @@ local function setup_player(player)
       allow_open_gui = false
     },
     history = {
-      current = {},
-      overall = {}
+      overall = {},
+      session = {}
     },
     gui = {}
   }
@@ -225,7 +226,17 @@ event.register(open_search_gui_event, function(e)
 end)
 
 event.register(open_info_gui_event, function(e)
-  info_gui.protected_open(game.get_player(e.player_index), e.category, e.object_name)
+  info_gui.protected_open(game.get_player(e.player_index), e.category, e.object_name, e.source)
+end)
+
+event.register(reopen_source_event, function(e)
+  if e.source == 'fe_search' then
+    -- reopen search GUI
+    search_gui.protected_open(game.get_player(e.player_index))
+  elseif e.source == 'fe_history' then
+    -- reopen history GUI
+    search_gui.protected_open(game.get_player(e.player_index), {open_to_history=true})
+  end
 end)
 
 -- DEBUGGING
