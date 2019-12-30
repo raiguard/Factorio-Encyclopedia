@@ -303,7 +303,7 @@ function self.open(player, options, player_table)
     data.textfield = input_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', clear_and_focus_on_right_click=true,
                                     lose_focus_on_confirm=true}
     -- results
-    data.results_listbox = search_flow.add{type='frame', name='fe_results_frame', style='fe_search_results_mock_listbox_frame'}
+    data.results_listbox = search_flow.add{type='frame', name='fe_results_frame', style='fe_search_results_listbox_frame'}
     .add{type='list-box', name='fe_results_listbox', style='fe_listbox_for_keyboard_nav'}
     -- ADD TAB
     gui_data.tabbed_pane.add_tab(
@@ -335,16 +335,18 @@ function self.open(player, options, player_table)
     local data = {}
     local history_pane = gui_data.tabbed_pane.add{type='frame', name='fe_history_pane', style='window_content_frame_packed', direction='vertical'}
     -- TOOLBAR
-    data.delete_button = history_pane.add{type='frame', name='fe_toolbar_frame', style='fe_toolbar_frame', direction='horizontal'}
-    .add{type='empty-widget', name='fe_pusher', style='fe_horizontal_pusher'}
-    .parent.add{type='sprite-button', name='fe_delete_button', style='red_icon_button', sprite='utility/trash'}
+    data.toolbar = history_pane.add{type='frame', name='fe_toolbar_frame', style='fe_toolbar_frame', direction='horizontal'}
+    data.toolbar.add{type='empty-widget', name='fe_pusher', style='fe_horizontal_pusher'}
+    data.delete_button = data.toolbar.add{type='sprite-button', name='fe_delete_button', style='red_icon_button', sprite='utility/trash'}
+    data.delete_button.enabled = false
     -- HISTORY
-    data.history_scrollpane = history_pane.add{type='frame', name='fe_history_frame', style='fe_history_mock_listbox_frame'}
-    .add{type='scroll-pane', name='fe_history_scrollpane', style='fe_mock_listbox_scrollpane'}
+    data.history_listbox = history_pane.add{type='frame', name='fe_history_frame', style='fe_history_listbox_frame'}
+    .add{type='list-box', name='fe_history_listbox', style='fe_listbox'}
     gui_data.tabbed_pane.add_tab(
       gui_data.tabbed_pane.add{type='tab', name='fe_history_tab', style='fe_search_tab', caption={'fe-gui-search.history-tab-caption'}},
       history_pane
     )
+    -- EXPORT DATA
     gui_data.history_elems = data
   end
   --

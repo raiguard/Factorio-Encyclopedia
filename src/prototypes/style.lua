@@ -151,6 +151,55 @@ styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target 
   use_header_filler = false
 }
 
+styles.fe_listbox_frame = {
+  type = 'frame_style',
+  padding = 0,
+  width = 225,
+  graphical_set = { -- inset from a light frame, but keep the dark background
+    base = {
+      position = {85,0},
+      corner_size = 8,
+      draw_type = 'outer',
+      center = {position={42,8}, size=1}
+    },
+    shadow = default_inner_shadow
+  },
+  background_graphical_set = { -- rubber grid
+    position = {282,17},
+    corner_size = 8,
+    overall_tiling_vertical_size = 20,
+    overall_tiling_vertical_spacing = 8,
+    overall_tiling_vertical_padding = 4,
+    overall_tiling_horizontal_padding = 4
+  },
+  vertically_stretchable = 'on'
+}
+
+styles.fe_search_results_listbox_frame = {
+  type = 'frame_style',
+  parent = 'fe_listbox_frame',
+  height = 196
+}
+
+styles.fe_history_listbox_frame = {
+  type = 'frame_style',
+  parent = 'fe_listbox_frame',
+  height = 224,
+  width = 279,
+  graphical_set = {
+    base = {
+      position = {17,0},
+      corner_size = 8,
+      center = {position={42,8}, size=1},
+      top = {},
+      left_top = {},
+      right_top = {},
+      draw_type = 'outer'
+    },
+    shadow = default_inner_shadow
+  }
+}
+
 -- -----------------------------------------------------------------------------
 -- FLOW STYLES
 
@@ -207,6 +256,14 @@ styles.fe_listbox_label = {
 -- -----------------------------------------------------------------------------
 -- LIST BOX STYLES
 
+styles.fe_listbox_item = {
+  type = 'button_style',
+  parent = 'list_box_item',
+  horizontally_stretchable = 'on',
+  left_padding = 4,
+  right_padding = 4
+}
+
 styles.fe_listbox = {
   type = 'list_box_style',
   parent = 'list_box',
@@ -219,8 +276,7 @@ styles.fe_listbox = {
   },
   item_style = {
     type = 'button_style',
-    parent = 'list_box_item',
-    horizontally_stretchable = 'on'
+    parent = 'fe_listbox_item'
   }
 }
 
@@ -229,8 +285,7 @@ styles.fe_listbox_for_keyboard_nav = {
   parent = 'fe_listbox',
   item_style = {
     type = 'button_style',
-    parent = 'list_box_item',
-    horizontally_stretchable = 'on',
+    parent = 'fe_listbox_item',
     selected_graphical_set = {
       base = {position = {34,17}, corner_size=8},
       shadow = default_dirt
