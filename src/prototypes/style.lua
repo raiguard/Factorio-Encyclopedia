@@ -155,6 +155,7 @@ styles.fe_listbox_frame = {
   type = 'frame_style',
   padding = 0,
   width = 225,
+  height = 168, -- six rows
   graphical_set = { -- inset from a light frame, but keep the dark background
     base = {
       position = {85,0},
@@ -249,7 +250,7 @@ styles.fe_object_icon = {
 
 styles.fe_listbox_label = {
   type = 'label_style',
-  parent = 'caption_label',
+  font = 'default-semibold',
   left_padding = 2
 }
 
@@ -328,6 +329,17 @@ styles.fe_search_tab = {
     base={position={448,103}, corner_size=8},
     shadow = tab_glow(default_shadow_color, 0.5)
   }
+}
+
+-- -----------------------------------------------------------------------------
+-- TABLE STYLES
+
+styles.fe_bordered_table = {
+  type = 'table_style',
+  parent = 'bordered_table',
+  margin = 2,
+  right_cell_padding = 6,
+  bottom_cell_padding = 6
 }
 
 -- -----------------------------------------------------------------------------
