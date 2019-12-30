@@ -159,7 +159,7 @@ local function setup_player(player)
     search = {}
   }
   local button = mod_gui.get_button_flow(player).add{type='sprite-button', name='fe_mod_gui_button', style=mod_gui.button_style, sprite='fe_logo',
-                                                     tooltip={'fe-gui-general.mod-gui-button-tooltip'}}
+                                                     tooltip={'fe-gui.encyclopedia'}}
   global.players[player.index].gui.mod_gui = {top_button=button}
 end
 

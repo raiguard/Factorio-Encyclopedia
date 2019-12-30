@@ -12,7 +12,7 @@ local self = {}
 local handlers = {common={}}
 local pages = {}
 for _,category in ipairs(categories) do
-  pages[category] = pcall(require,'scripts/gui/pages/'..category)
+  pages[category] = pcall(require,'scripts/gui/info-pages/'..category)
 end
 
 -- -----------------------------------------------------------------------------
@@ -37,6 +37,14 @@ end
 
 -- -----------------------------------------------------------------------------
 -- GUI EVENT HANDLERS
+
+function handlers.common.back_button_clicked(e)
+
+end
+
+function handlers.common.forward_button_clicked(e)
+
+end
 
 function handlers.common.search_button_clicked(e)
   -- self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
@@ -68,7 +76,11 @@ function self.open(player, category, name, player_table)
     common.window.enabled = false
     -- TITLEBAR
     local titlebar = common.window.add{type='flow', name='fe_titlebar', style='fe_titlebar_flow', direction='horizontal'}
-    titlebar.add{type='label', name='fe_window_title', style='frame_title', caption={'fe-gui.category-'..category}}
+    common.back_button = titlebar.add{type='sprite-button', name='fe_back_button', style='close_button', sprite='fe_nav_backward',
+                                      hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
+    common.forward_button = titlebar.add{type='sprite-button', name='fe_forward_button', style='close_button', sprite='fe_nav_forward',
+                                         hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
+    titlebar.add{type='label', name='fe_window_title', style='frame_title', caption={'fe-gui.category-'..category}}.style.left_padding = 7
     titlebar.add{type='empty-widget', name='fe_draggable_space', style='fe_titlebar_draggable_space'}.drag_target = common.window
     common.search_button = titlebar.add{type='sprite-button', name='fe_search_button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark',
                                         clicked_sprite='fe_search_dark', tooltip={'fe-gui.return-to-search'}}
@@ -92,6 +104,8 @@ function self.open(player, category, name, player_table)
     common.action_bar.add{type='sprite-button', name='fe_tool_button', style='tool_button'}
     -- REGISTER GUI HANDLERS
     register_gui_handlers(player.index, 'common', {
+      {defines.events.on_gui_click, {name='back_button_clicked', gui_filters=common.back_button}},
+      {defines.events.on_gui_click, {name='forward_button_clicked', gui_filters=common.forward_button}},
       {defines.events.on_gui_click, {name='search_button_clicked', gui_filters=common.search_button}},
       {{defines.events.on_gui_click, defines.events.on_gui_closed}, {name='window_closed', gui_filters={common.close_button, common.window}}}
     })
