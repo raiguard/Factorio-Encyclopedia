@@ -82,53 +82,6 @@ styles.fe_tool_button_active = {
 --   size = 28
 -- }
 
-styles.fe_mock_listbox_item = {
-  type = 'button_style',
-  parent = 'list_box_item',
-  horizontally_stretchable = 'on',
-  maximal_width = 225,
-  left_padding = 4,
-  right_padding = 4
-}
-
-styles.fe_mock_listbox_item_selected = {
-  type = 'button_style',
-  parent = 'fe_mock_listbox_item',
-  -- graphical sets
-  default_font_color = button_hovered_font_color,
-  default_graphical_set = {
-    base = {position={34,17}, corner_size=8},
-  },
-  hovered_graphical_set = {
-    base = {position={34,17}, corner_size=8},
-    glow = default_glow(default_glow_color, 0.5)
-  }
-}
-
-styles.fe_mock_listbox_item_active = {
-  type = 'button_style',
-  parent = 'fe_mock_listbox_item',
-  -- emulate text_offset
-  top_padding = 1,
-  bottom_padding = -1,
-  -- graphical sets
-  default_font_color = button_hovered_font_color,
-  default_graphical_set = {
-    base = {position={225,17}, corner_size=8},
-    shadow = default_dirt
-  },
-  hovered_font_color = button_hovered_font_color,
-  hovered_graphical_set = {
-    base = {position={369,17}, corner_size=8},
-    shadow = default_dirt
-  },
-  clicked_font_color = button_hovered_font_color,
-  clicked_graphical_set = {
-    base = {position={352,17}, corner_size=8},
-    shadow = default_dirt
-  }
-}
-
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
 
@@ -189,55 +142,6 @@ styles.fe_toolbar_left = {
   right_padding = 1
 }
 
-styles.fe_mock_listbox_frame = {
-  type = 'frame_style',
-  padding = 0,
-  width = 225,
-  graphical_set = { -- inset from a light frame, but keep the dark background
-    base = {
-      position = {85,0},
-      corner_size = 8,
-      draw_type = 'outer',
-      center = {position={42,8}, size=1}
-    },
-    shadow = default_inner_shadow
-  },
-  background_graphical_set = { -- rubber grid
-    position = {282,17},
-    corner_size = 8,
-    overall_tiling_vertical_size = 20,
-    overall_tiling_vertical_spacing = 8,
-    overall_tiling_vertical_padding = 4,
-    overall_tiling_horizontal_padding = 4
-  },
-  vertically_stretchable = 'on'
-}
-
-styles.fe_search_results_mock_listbox_frame = {
-  type = 'frame_style',
-  parent = 'fe_mock_listbox_frame',
-  height = 196
-}
-
-styles.fe_history_mock_listbox_frame = {
-  type = 'frame_style',
-  parent = 'fe_mock_listbox_frame',
-  height = 224,
-  width = 279,
-  graphical_set = {
-    base = {
-      position = {17,0},
-      corner_size = 8,
-      center = {position={42,8}, size=1},
-      top = {},
-      left_top = {},
-      right_top = {},
-      draw_type = 'outer'
-    },
-    shadow = default_inner_shadow
-  }
-}
-
 styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target work
   type = 'frame_style',
   margin = 0,
@@ -294,30 +198,50 @@ styles.fe_object_icon = {
 -- -----------------------------------------------------------------------------
 -- LABEL STYLES
 
-styles.fe_mock_listbox_label = {
+styles.fe_listbox_label = {
   type = 'label_style',
   parent = 'caption_label',
   left_padding = 2
 }
 
 -- -----------------------------------------------------------------------------
--- SCROLL PANE STYLES
+-- LIST BOX STYLES
 
-styles.fe_mock_listbox_scrollpane = {
-  type = 'scroll_pane_style',
-  padding = 0,
-  extra_padding_when_activated = 0,
-  -- 0.18 (hopefully...)
-  extra_right_padding_when_activated = -12,
-  graphical_set = {},
-  background_graphical_set = {},
-  vertical_flow_style = {
-    type = 'vertical_flow_style',
-    vertical_spacing = 0,
-    vertically_stretchable = 'on',
+styles.fe_listbox = {
+  type = 'list_box_style',
+  parent = 'list_box',
+  scroll_pane_style = { -- invisible scroll pane
+    type = 'scroll_pane_style',
+    parent = 'list_box_scroll_pane',
+    graphical_set = {},
+    background_graphical_set = {},
+    vertically_stretchable = 'on'
+  },
+  item_style = {
+    type = 'button_style',
+    parent = 'list_box_item',
     horizontally_stretchable = 'on'
   }
 }
+
+styles.fe_listbox_for_keyboard_nav = {
+  type = 'list_box_style',
+  parent = 'fe_listbox',
+  item_style = {
+    type = 'button_style',
+    parent = 'list_box_item',
+    horizontally_stretchable = 'on',
+    selected_graphical_set = {
+      base = {position = {34,17}, corner_size=8},
+      shadow = default_dirt
+    }
+  }
+}
+
+-- -----------------------------------------------------------------------------
+-- SCROLL PANE STYLES
+
+
 
 -- -----------------------------------------------------------------------------
 -- TABBED PANE STYLES

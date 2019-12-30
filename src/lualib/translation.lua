@@ -65,7 +65,7 @@ local function sort_translated_string(e)
   for name,t in pairs(player_translation) do
     local value = t.data[serialised]
     if value then
-      if e.translated then
+      if e.translated and e.result ~= '' then
         local result = e.result
         if t.convert_to_lowercase then
           result = string_lower(result)

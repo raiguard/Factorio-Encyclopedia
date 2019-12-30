@@ -47,12 +47,23 @@ end
 function handlers.common.gui_closed(e)
   local gui_data = global.players[e.player_index].gui
   local search_data = gui_data.search
-  if search_data.state ~= 'select_result' then
-    if search_data.state == 'to_search' then
-      search_data.state = 'search'
-    else
-      self.close(game.get_player(e.player_index), gui_data)
+  if search_data.state == 'select_category' then
+    self.close(game.get_player(e.player_index), gui_data)
+  end
+end
+
+function handlers.common.selected_tab_changed(e)
+  local gui_data = global.players[e.player_index].gui.search
+  local search_elems = gui_data.search_elems
+  local state = gui_data.state
+  local index = e.element.selected_tab_index
+  if index == 1 then -- search
+    if state == 'search' then -- refocus textfield
+      search_elems.textfield.select_all()
+      search_elems.textfield.focus()
     end
+  else
+
   end
 end
 
@@ -60,6 +71,7 @@ end
 
 -- change current category and refresh GUI
 function handlers.search.category_button_clicked(e)
+  if e.used_keyboard_nav == nil then e.used_keyboard_nav = false end
   local player_table = global.players[e.player_index]
   local gui_data = player_table.gui.search
   local search_elems = gui_data.search_elems
@@ -83,52 +95,38 @@ end
 
 -- update search results list
 function handlers.search.textfield_text_changed(e)
-  local profiler = game.create_profiler()
-  local prev_items = global.players[e.player_index].gui.search.search_elems.results_listbox.items
-  -- STRESS TESTING
-  for _=1,1000 do
-    local player_table = global.players[e.player_index]
-    local gui_data = player_table.gui.search
-    local search_elems = gui_data.search_elems
-    local query = string_lower(e.text)
-    local category = gui_data.category
-    local search_table = player_table.search[category]
-    local results_listbox = search_elems.results_listbox
-    local add_item = results_listbox.add_item
-    local set_item = results_listbox.set_item
-    local remove_item = results_listbox.remove_item
-    local items_length = #results_listbox.items
-    local i = 0
-    for i1=1,#search_table do
-      local t = search_table[i1]
-      local localised = t.localised
-      if string_match(localised, query) then
-        local internal = t.internal
-        for i2=1,#internal do
-          i = i + 1
-          local name = t.internal[i2]
-          local caption = '[img='..category..'/'..name..']  '..t.localised
-          if i <= items_length then
-            set_item(i, caption)
-          else
-            add_item(caption)
-          end
+  local player_table = global.players[e.player_index]
+  local gui_data = player_table.gui.search
+  local search_elems = gui_data.search_elems
+  local query = string_lower(e.text)
+  local category = gui_data.category
+  local search_table = player_table.search[category]
+  local results_listbox = search_elems.results_listbox
+  local add_item = results_listbox.add_item
+  local set_item = results_listbox.set_item
+  local remove_item = results_listbox.remove_item
+  local items_length = #results_listbox.items
+  local i = 0
+  for i1=1,#search_table do
+    local t = search_table[i1]
+    local localised = t.localised
+    if string_match(string_lower(localised), query) then
+      local internal = t.internal
+      for i2=1,#internal do
+        i = i + 1
+        local name = t.internal[i2]
+        local caption = '[img='..category..'/'..name..']  '..localised
+        if i <= items_length then
+          set_item(i, caption)
+        else
+          add_item(caption)
         end
       end
     end
-    for i=#results_listbox.items,i+1,-1 do
-      remove_item(i)
-    end
-    profiler.stop()
-    local new_items = results_listbox.items
-    results_listbox.items = prev_items
-    prev_items = new_items
-    profiler.restart()
   end
-  -- END TESTING
-  profiler.stop()
-  profiler.divide(1000)
-  game.print(profiler)
+  for i=#results_listbox.items,i+1,-1 do
+    remove_item(i)
+  end
 end
 
 -- enter keyboard navigation of search results
@@ -142,8 +140,7 @@ function handlers.search.textfield_confirmed(e)
     {defines.events.on_gui_closed, {name='closed', gui_filters=search_elems.results_listbox}}
   })
   -- set initial selected index
-  gui_data.selected_result = 1
-  search_elems.results_listbox.children[1].style = 'fe_mock_listbox_item_selected'
+  search_elems.results_listbox.selected_index = 1
   -- set GUI state
   gui_data.state = 'select_result'
   -- set open GUI
@@ -153,13 +150,16 @@ end
 -- exit keyboard navigation of results
 function handlers.search.textfield_clicked(e)
   local gui_data = global.players[e.player_index].gui.search
-  if gui_data.state == 'select_result' then
+  if gui_data.state == 'select_result' or gui_data.state == 'select_category' then
     local search_elems = gui_data.search_elems
     -- deregister navigation handlers
     deregister_gui_handlers(e.player_index, 'search_nav')
     -- unset selected index
-    search_elems.results_listbox.children[gui_data.selected_result].style = 'fe_mock_listbox_item'
-    gui_data.selected_result = nil
+    search_elems.results_listbox.selected_index = 0
+    if gui_data.selected_category then
+      search_elems.category_frame.children[gui_data.selected_category].style = 'fe_tool_button_active'
+      gui_data.selected_category = nil
+    end
     -- set GUI state
     gui_data.state = 'search'
     game.get_player(e.player_index).opened = search_elems.textfield
@@ -197,10 +197,9 @@ function handlers.search.textfield_closed(e)
 end
 
 -- open dialog for the chosen item
-function handlers.search.result_item_clicked(e)
+function handlers.search.result_selection_changed(e)
   local gui_data = global.players[e.player_index].gui
-  -- get info from selected button
-  local _,_,category,object_name = e.element.caption[2]:find('^%[img=(.*)/(.*)%].*$')
+  local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
   self.close(game.get_player(e.player_index), gui_data)
   event.raise(open_modal_dialog_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
@@ -226,12 +225,8 @@ function handlers.search_nav.up_down(e)
     e.used_keyboard_nav = true
     handlers.search.category_button_clicked(e)
   elseif gui_data.state == 'select_result' then
-    local children = search_elems.results_listbox.children
-    children[gui_data.selected_result].style = 'fe_mock_listbox_item'
-    gui_data.selected_result = util.clamp(gui_data.selected_result + delta, 1, #children)
-    children[gui_data.selected_result].style = 'fe_mock_listbox_item_selected'
-    -- scroll to element
-    search_elems.results_listbox.scroll_to_element(children[gui_data.selected_result])
+    local listbox = search_elems.results_listbox
+    listbox.selected_index = util.clamp(listbox.selected_index+delta, 1, #listbox.items)
   end
 end
 
@@ -241,11 +236,12 @@ function handlers.search_nav.confirm(e)
   local search_elems = gui_data.search_elems
   if gui_data.state == 'select_category' then
     e.element = search_elems.category_frame.children[gui_data.selected_category]
+    e.used_keyboard_nav = false
     e.used_keyboard_confirm = true
     handlers.search.category_button_clicked(e)
   elseif gui_data.state == 'select_result' then
-    e.element = search_elems.results_listbox.children[gui_data.selected_result]
-    handlers.search.result_item_clicked(e)
+    e.element = search_elems.results_listbox
+    handlers.search.result_selection_changed(e)
   end
 end
 
@@ -282,7 +278,8 @@ function self.open(player, options, player_table)
   gui_data.tabbed_pane = gui_data.window.add{type='tabbed-pane', name='fe_search_window', style='fe_search_tabbed_pane'}
   -- REGISTER HANDLERS
   register_gui_handlers(player.index, 'common', {
-    {defines.events.on_gui_closed, {name='gui_closed', gui_filters=gui_data.window}}
+    {defines.events.on_gui_closed, {name='gui_closed', gui_filters=gui_data.window}},
+    {defines.events.on_gui_selected_tab_changed, {name='selected_tab_changed', gui_filters=gui_data.tabbed_pane}}
   })
   --
   -- SEARCH
@@ -307,7 +304,7 @@ function self.open(player, options, player_table)
                                     lose_focus_on_confirm=true}
     -- results
     data.results_listbox = search_flow.add{type='frame', name='fe_results_frame', style='fe_search_results_mock_listbox_frame'}
-    .add{type='list-box', name='fe_results_listbox'}
+    .add{type='list-box', name='fe_results_listbox', style='fe_listbox_for_keyboard_nav'}
     -- ADD TAB
     gui_data.tabbed_pane.add_tab(
       gui_data.tabbed_pane.add{type='tab', name='fe_search_tab', style='fe_search_tab', caption={'fe-gui-search.search-tab-caption'}},
@@ -321,7 +318,7 @@ function self.open(player, options, player_table)
       {defines.events.on_gui_confirmed, {name='textfield_confirmed', gui_filters=data.textfield}},
       {defines.events.on_gui_click, {name='textfield_clicked', gui_filters=data.textfield}},
       {defines.events.on_gui_closed, {name='textfield_closed', gui_filters=data.textfield}},
-      {defines.events.on_gui_click, {name='result_item_clicked', gui_filters='fe_results_item_'}}
+      {defines.events.on_gui_selection_state_changed, {name='result_selection_changed', gui_filters=data.results_listbox}}
     })
     -- SET INITIAL STATE
     -- category
@@ -402,10 +399,11 @@ function self.reset_search_pane(player_index, player_table, used_mouse)
   search_elems.choose_elem_button_container.clear()
   search_elems.choose_elem_button = search_elems.choose_elem_button_container.add{type='choose-elem-button', name='fe_search_choose_elem_button',
                                                                                   style='quick_bar_slot_button', elem_type=gui_data.category}
+  search_elems.results_listbox.selected_index = 0
   search_elems.textfield.text = player_table.dictionary.other.search[1]..' '..player_table.dictionary.category_name[gui_data.category][1]..'...'
   handlers.search.textfield_text_changed{player_index=player_index, text=''}
   if used_mouse then -- set GUI state and focus textfield
-    gui_data.state = 'to_search'
+    gui_data.state = 'search'
     search_elems.textfield.select_all()
     search_elems.textfield.focus()
     game.get_player(player_index).opened = search_elems.textfield

@@ -11,6 +11,7 @@ local translation = require('lualib/translation')
 
 -- locals
 local serialise_localised_string = translation.serialise_localised_string
+local string_lower = string.lower
 local table_sort = table.sort
 
 -- modules
@@ -136,7 +137,7 @@ end
 
 local function translate_whole(player, ignore_error)
   for name,t in pairs(global.__translation.translation_data) do
-    translation.start(player, name, t.data, t.strings, {convert_to_lowercase=true, ignore_error=ignore_error})
+    translation.start(player, name, t.data, t.strings, {ignore_error=ignore_error})
   end
 end
 
@@ -214,6 +215,7 @@ event.register(translation.finish_event, function(e)
     sorted[i] = {localised=sorted[i], internal=searchable[sorted[i]]}
   end
   player_table.search[e.dictionary_name] = sorted
+  -- set flag when we're all done
   if table_size(player_table.dictionary) == 10 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
