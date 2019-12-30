@@ -14,13 +14,14 @@ local serialise_localised_string = translation.serialise_localised_string
 local string_lower = string.lower
 local table_sort = table.sort
 
--- modules
-local search_gui = require('scripts/gui/search')
-local modal_dialog = require('scripts/gui/modal-dialogs/root')
-
 -- globals
-open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
-open_modal_dialog_event = event.generate_id('open_modal_dialog') -- not really used by the mod, but is for the remote interface
+open_info_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
+open_search_event = event.generate_id('open_search_gui') -- used internally by the mod only
+categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
+
+-- modules
+local info_gui = require('scripts/gui/info')
+local search_gui = require('scripts/gui/search')
 
 -- -----------------------------------------------------------------------------
 -- ENCYCLOPEDIA DATA
@@ -84,8 +85,6 @@ local build_functions = {
   }
 }
 
-local categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
-
 -- builds encyclopedia data
 local function build_encyclopedia()
   global.encyclopedia = {}
@@ -119,9 +118,9 @@ local function build_encyclopedia()
   for _,category in ipairs(categories) do
     encyclopedia[category], translation_data[category] = setup(category)
     -- category
-    local serialised_category = serialise_localised_string{'fe-gui-general.category-'..category}
+    local serialised_category = serialise_localised_string{'fe-gui.category-'..category..'-plural'}
     translation_data.category_name.data[serialised_category] = category
-    translation_data.category_name.strings[#translation_data.category_name.strings+1] = {'fe-gui-general.category-'..category}
+    translation_data.category_name.strings[#translation_data.category_name.strings+1] = {'fe-gui.category-'..category..'-plural'}
   end
   -- other
   translation_data.other = {
@@ -233,12 +232,12 @@ event.on_gui_click(function(e)
   search_gui.toggle(game.get_player(e.player_index))
 end, {gui_filters='fe_mod_gui_button'})
 
-event.register(open_search_gui_event, function(e)
+event.register(open_search_event, function(e)
   search_gui.protected_open(game.get_player(e.player_index), e.options)
 end)
 
-event.register(open_modal_dialog_event, function(e)
-  game.print('Create '..e.category..' dialog for '..e.object_name)
+event.register(open_info_event, function(e)
+  info_gui.protected_open(game.get_player(e.player_index), e.category, e.object_name)
 end)
 
 -- DEBUGGING

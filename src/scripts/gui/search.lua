@@ -1,7 +1,5 @@
--- local profiler = require('__profiler__/profiler.lua')
-
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
--- SEARCH GUI SCRIPTING
+-- SEARCH GUI
 
 -- dependencies
 local event = require('lualib/event')
@@ -26,15 +24,16 @@ local handlers = {
 -- registers GUI events in a more compact form
 local function register_gui_handlers(player_index, prefix, t)
   for _,data in ipairs(t) do
-    event.register(data[1], handlers[prefix][data[2].name], {name=prefix..'_'..data[2].name, player_index=player_index, gui_filters=data[2].gui_filters})
+    event.register(data[1], handlers[prefix][data[2].name], {name='search_'..prefix..'_'..data[2].name, player_index=player_index,
+                   gui_filters=data[2].gui_filters})
   end
 end
 
 -- deregisters GUI events in a more compact form
 local function deregister_gui_handlers(player_index, prefix)
   for name,handler in pairs(handlers[prefix]) do
-    if event.is_registered(prefix..'_'..name, player_index) then
-      event.deregister_conditional(handler, {name=prefix..'_'..name, player_index=player_index})
+    if event.is_registered('search_'..prefix..'_'..name, player_index) then
+      event.deregister_conditional(handler, {name='search_'..prefix..'_'..name, player_index=player_index})
     end
   end
 end
@@ -90,7 +89,7 @@ function handlers.search.choose_elem_button_elem_changed(e)
   local category = e.element.elem_type
   local object_name = e.element.elem_value
   self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-  event.raise(open_modal_dialog_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
 
 -- update search results list
@@ -201,7 +200,7 @@ function handlers.search.result_selection_changed(e)
   local gui_data = global.players[e.player_index].gui
   local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
   self.close(game.get_player(e.player_index), gui_data)
-  event.raise(open_modal_dialog_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
 
 -- SEARCH NAVIGATION
@@ -291,7 +290,7 @@ function self.open(player, options, player_table)
     data.category_frame = search_pane.add{type='frame', name='fe_category_frame', style='fe_toolbar_left', direction='vertical'}
     for category,_ in pairs(global.encyclopedia) do
       data.category_frame.add{type='sprite-button', name='fe_category_button_'..category, style='tool_button', sprite='fe_category_'..category,
-                               tooltip={'fe-gui-general.category-'..category}}
+                               tooltip={'fe-gui.category-'..category..'-plural'}}
     end
     -- SEARCH
     local search_flow = search_pane.add{type='flow', name='fe_search_flow', style='fe_search_flow', direction='vertical'}
@@ -307,7 +306,7 @@ function self.open(player, options, player_table)
     .add{type='list-box', name='fe_results_listbox', style='fe_listbox_for_keyboard_nav'}
     -- ADD TAB
     gui_data.tabbed_pane.add_tab(
-      gui_data.tabbed_pane.add{type='tab', name='fe_search_tab', style='fe_search_tab', caption={'fe-gui-search.search-tab-caption'}},
+      gui_data.tabbed_pane.add{type='tab', name='fe_search_tab', style='fe_search_tab', caption={'gui.search'}},
       search_pane
     )
     -- REGISTER HANDLERS
@@ -343,7 +342,7 @@ function self.open(player, options, player_table)
     data.history_listbox = history_pane.add{type='frame', name='fe_history_frame', style='fe_history_listbox_frame'}
     .add{type='list-box', name='fe_history_listbox', style='fe_listbox'}
     gui_data.tabbed_pane.add_tab(
-      gui_data.tabbed_pane.add{type='tab', name='fe_history_tab', style='fe_search_tab', caption={'fe-gui-search.history-tab-caption'}},
+      gui_data.tabbed_pane.add{type='tab', name='fe_history_tab', style='fe_search_tab', caption={'fe-gui.history'}},
       history_pane
     )
     -- EXPORT DATA
