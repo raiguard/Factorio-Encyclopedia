@@ -10,13 +10,12 @@ local mod_gui = require('mod-gui')
 local translation = require('lualib/translation')
 
 -- locals
-local serialise_localised_string = translation.serialise_localised_string
 local string_lower = string.lower
 local table_sort = table.sort
 
 -- globals
-open_info_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
-open_search_event = event.generate_id('open_search_gui') -- used internally by the mod only
+open_info_gui_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
+open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
 categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
 
 -- modules
@@ -89,11 +88,11 @@ local build_functions = {
 local function build_encyclopedia()
   global.encyclopedia = {}
   local encyclopedia = global.encyclopedia
+
   local function setup(key)
     local encyclopedia_data = {}
     local translation_data = {}
-    local translation_strings = {}
-    local translation_strings_len = 0
+    local i = 0
     local iteration_data
     if build_functions[key] and build_functions[key].setup then
       iteration_data = build_functions[key].setup()
@@ -108,35 +107,29 @@ local function build_encyclopedia()
       -- encyclopedia data
       encyclopedia_data[name] = iteration_function(name, prototype, iteration_data, encyclopedia)
       -- translation data
-      translation_data[serialise_localised_string(prototype.localised_name)] = name
-      translation_strings_len = translation_strings_len + 1
-      translation_strings[translation_strings_len] = prototype.localised_name
+      i = i + 1
+      translation_data[i] = {localised=prototype.localised_name, internal=name}
     end
-    return encyclopedia_data, {data=translation_data, strings=translation_strings}
+    return encyclopedia_data, translation_data
   end
-  local translation_data = {category_name={data={}, strings={}}}
+
+  local translation_data = {category={}}
   for _,category in ipairs(categories) do
+    -- prototypes
     encyclopedia[category], translation_data[category] = setup(category)
     -- category
-    local serialised_category = serialise_localised_string{'fe-gui.category-'..category..'-plural'}
-    translation_data.category_name.data[serialised_category] = category
-    translation_data.category_name.strings[#translation_data.category_name.strings+1] = {'fe-gui.category-'..category..'-plural'}
+    translation_data.category[#translation_data.category+1] = {localised={'fe-gui.category-'..category}, internal=category}
   end
   -- other
   translation_data.other = {
-    data = {
-      [serialise_localised_string{'gui.search'}] = 'search'
-    },
-    strings = {
-      {'gui.search'}
-    }
+    {localised={'gui.search'}, internal='search'}
   }
   global.__translation.translation_data = translation_data
 end
 
 local function translate_whole(player, ignore_error)
-  for name,t in pairs(global.__translation.translation_data) do
-    translation.start(player, name, t.data, t.strings, {ignore_error=ignore_error})
+  for name,data in pairs(global.__translation.translation_data) do
+    translation.start(player, name, data, {ignore_error=ignore_error})
   end
 end
 
@@ -155,8 +148,11 @@ local function setup_player(player)
     flags = {
       allow_open_gui = false
     },
-    gui = {},
-    search = {}
+    history = {
+      current = {},
+      overall = {}
+    },
+    gui = {}
   }
   local button = mod_gui.get_button_flow(player).add{type='sprite-button', name='fe_mod_gui_button', style=mod_gui.button_style, sprite='fe_logo',
                                                      tooltip={'fe-gui.encyclopedia'}}
@@ -202,19 +198,11 @@ end)
 
 event.register(translation.finish_event, function(e)
   local player_table = global.players[e.player_index]
-  player_table.dictionary[e.dictionary_name] = e.dictionary
-  -- create sorted array of searchable table
-  local searchable = e.searchable
-  local sorted = {}
-  for localised,_ in pairs(searchable) do
-    sorted[#sorted+1] = localised
-  end
-  table_sort(sorted)
-  for i=1,#sorted do
-    sorted[i] = {localised=sorted[i], internal=searchable[sorted[i]]}
-  end
-  player_table.search[e.dictionary_name] = sorted
-  -- set flag when we're all done
+  player_table.dictionary[e.dictionary_name] = {
+    lookup = e.lookup,
+    translations = e.translations,
+    searchable = e.searchable
+  }
   if table_size(player_table.dictionary) == 10 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
@@ -232,11 +220,11 @@ event.on_gui_click(function(e)
   search_gui.toggle(game.get_player(e.player_index))
 end, {gui_filters='fe_mod_gui_button'})
 
-event.register(open_search_event, function(e)
+event.register(open_search_gui_event, function(e)
   search_gui.protected_open(game.get_player(e.player_index), e.options)
 end)
 
-event.register(open_info_event, function(e)
+event.register(open_info_gui_event, function(e)
   info_gui.protected_open(game.get_player(e.player_index), e.category, e.object_name)
 end)
 

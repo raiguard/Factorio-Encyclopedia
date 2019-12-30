@@ -89,7 +89,7 @@ function handlers.search.choose_elem_button_elem_changed(e)
   local category = e.element.elem_type
   local object_name = e.element.elem_value
   self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-  event.raise(open_info_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
 
 -- update search results list
@@ -99,7 +99,7 @@ function handlers.search.textfield_text_changed(e)
   local search_elems = gui_data.search_elems
   local query = string_lower(e.text)
   local category = gui_data.category
-  local search_table = player_table.search[category]
+  local search_table = player_table.dictionary[category].searchable
   local results_listbox = search_elems.results_listbox
   local add_item = results_listbox.add_item
   local set_item = results_listbox.set_item
@@ -108,18 +108,14 @@ function handlers.search.textfield_text_changed(e)
   local i = 0
   for i1=1,#search_table do
     local t = search_table[i1]
-    local localised = t.localised
-    if string_match(string_lower(localised), query) then
-      local internal = t.internal
-      for i2=1,#internal do
-        i = i + 1
-        local name = t.internal[i2]
-        local caption = '[img='..category..'/'..name..']  '..localised
-        if i <= items_length then
-          set_item(i, caption)
-        else
-          add_item(caption)
-        end
+    local translated = t.translated
+    if string_match(string_lower(translated), query) then
+      local caption = '[img='..category..'/'..t.internal..']  '..translated
+      i = i + 1
+      if i <= items_length then
+        set_item(i, caption)
+      else
+        add_item(caption)
       end
     end
   end
@@ -200,7 +196,7 @@ function handlers.search.result_selection_changed(e)
   local gui_data = global.players[e.player_index].gui
   local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
   self.close(game.get_player(e.player_index), gui_data)
-  event.raise(open_info_event, {player_index=e.player_index, category=category, object_name=object_name})
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
 end
 
 -- SEARCH NAVIGATION
@@ -323,7 +319,7 @@ function self.open(player, options, player_table)
     -- category
     data.category_frame['fe_category_button_'..(options.category or 'item')].style = 'fe_tool_button_active'
     -- search textfield
-    data.textfield.text = player_table.dictionary.other.search[1]..' '..player_table.dictionary.category_name[options.category or 'item'][1]..'...'
+    data.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[options.category or 'item']..'...'
     -- EXPORT DATA
     gui_data.search_elems = data
   end
@@ -401,7 +397,7 @@ function self.reset_search_pane(player_index, player_table, used_mouse)
   search_elems.choose_elem_button = search_elems.choose_elem_button_container.add{type='choose-elem-button', name='fe_search_choose_elem_button',
                                                                                   style='quick_bar_slot_button', elem_type=gui_data.category}
   search_elems.results_listbox.selected_index = 0
-  search_elems.textfield.text = player_table.dictionary.other.search[1]..' '..player_table.dictionary.category_name[gui_data.category][1]..'...'
+  search_elems.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[gui_data.category]..'...'
   handlers.search.textfield_text_changed{player_index=player_index, text=''}
   if used_mouse then -- set GUI state and focus textfield
     gui_data.state = 'search'

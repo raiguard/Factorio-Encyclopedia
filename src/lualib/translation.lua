@@ -9,9 +9,11 @@ local event = require('lualib/event')
 local util = require('__core__/lualib/util')
 
 -- locals
+local math_floor = math.floor
 local string_gsub = string.gsub
 local string_lower = string.lower
-local math_floor = math.floor
+local table_sort = table.sort
+local table_remove = table.remove
 
 -- -----------------------------------------------------------------------------
 
@@ -70,25 +72,27 @@ local function sort_translated_string(e)
         if t.convert_to_lowercase then
           result = string_lower(result)
         end
-        -- dictionary
-        local dictionary = t.dictionary[value]
-        if dictionary then
-          dictionary[#dictionary+1] = result -- this shouldn't ever happen, but it's included just in case
+        -- lookup
+        local lookup = t.lookup[result]
+        if lookup then
+          lookup[#lookup+1] = value
         else
-          t.dictionary[value] = {result}
+          t.lookup[result] = {value}
         end
         -- searchable
-        local searchable = t.searchable[result]
-        if searchable then
-          searchable[#searchable+1] = value
+        t.searchable[#t.searchable+1] = result
+        -- translation
+        local translation = t.translations[value]
+        if translation then
+          error('Duplicate key \''..value..'\' in dictionary: '..t.name)
         else
-          t.searchable[result] = {value}
+          t.translations[value] = result
         end
       else
-        log(name..':  key \''..serialised..'\' was not successfully translated, and will not be included in the dictionary.')
+        log(name..':  key \''..serialised..'\' was not successfully translated, and will not be included in the output.')
       end
       t.data[serialised] = nil
-      if table_size(t.data) == 0 then -- this dictionary has completed translation
+      if table_size(t.data) == 0 then -- this set has completed translation
         player_translation[name] = nil
         if table_size(player_translation) == 0 then -- remove player from translating table if they're done
           __translation.players[e.player_index] = nil
@@ -97,8 +101,22 @@ local function sort_translated_string(e)
             event.deregister(defines.events.on_string_translated, sort_translated_string, {name='translation_sort_result'})
           end
         end
+        -- sort searchable array and optimise it
+        local searchable = t.searchable
+        local lookup = t.lookup
+        local indexes = {}
+        table_sort(searchable)
+        for i=1,#searchable do
+          local translated = searchable[i]
+          local lookup = lookup[translated]
+          local index = (indexes[translated] or 0) + 1
+          searchable[i] = {internal=lookup[index], translated=translated}
+          indexes[translated] = index
+        end
+        -- raise events to finish up
         event.raise(translation.update_dictionary_count_event, {delta=-1})
-        event.raise(translation.finish_event, {player_index=e.player_index, dictionary_name=name, dictionary=t.dictionary, searchable=t.searchable})
+        event.raise(translation.finish_event, {player_index=e.player_index, dictionary_name=name, lookup=lookup, searchable=searchable,
+                    translations=t.translations})
       end
       return
     end
@@ -108,7 +126,7 @@ end
 translation.serialise_localised_string = serialise_localised_string
 
 -- begin translating strings
-function translation.start(player, dictionary_name, data, strings, options)
+function translation.start(player, dictionary_name, data, options)
   options = options or {}
   local __translation = global.__translation
   if not __translation.players[player.index] then __translation.players[player.index] = {} end
@@ -116,9 +134,20 @@ function translation.start(player, dictionary_name, data, strings, options)
   if not options.ignore_error and player_translation[dictionary_name] then
     error('Already translating dictionary: '..dictionary_name)
   end
+  -- parse data table to create iteration tables
+  local translation_data = {}
+  local strings = {}
+  local strings_len = 0
+  for i=1,#data do
+    local t = data[i]
+    local localised = t.localised
+    translation_data[serialise_localised_string(localised)] = t.internal
+    strings[i] = localised
+  end
+  local breakpoint
   player_translation[dictionary_name] = {
     -- tables
-    data = table.deepcopy(data), -- this table gets destroyed as it is translated, so deepcopy it
+    data = translation_data, -- this table gets destroyed as it is translated, so deepcopy it
     strings = strings,
     -- iteration
     next_index = 1,
@@ -128,8 +157,9 @@ function translation.start(player, dictionary_name, data, strings, options)
     -- settings
     convert_to_lowercase = options.convert_to_lowercase,
     -- output
-    dictionary = {},
-    searchable = {}
+    lookup = {},
+    searchable = {},
+    translations = {}
   }
   event.raise(translation.update_dictionary_count_event, {delta=1})
   event.raise(translation.start_event, {player_index=player.index, dictionary_name=dictionary_name})

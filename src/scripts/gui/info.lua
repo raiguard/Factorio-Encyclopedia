@@ -48,7 +48,7 @@ end
 
 function handlers.common.search_button_clicked(e)
   -- self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-  event.raise(open_search_event, {player_index=e.player_index})
+  event.raise(open_search_gui_event, {player_index=e.player_index})
 end
 
 function handlers.common.window_closed(e)
