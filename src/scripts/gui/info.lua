@@ -5,7 +5,7 @@
 local event = require('lualib/event')
 
 -- locals
-
+local table_insert = table.insert
 
 -- objects
 local self = {}
@@ -62,9 +62,9 @@ end)
 -- -----------------------------------------------------------------------------
 -- OBJECT
 
-function self.open(player, category, name, player_table)
+function self.open(player, category, name, options)
   if not category or not name then error('Cannot open info GUI without info!') end
-  player_table = player_table or global.players[player.index]
+  local player_table = options.player_table or global.players[player.index]
   local encyclopedia = global.encyclopedia[category]
   local gui_data = {}
   --
@@ -83,7 +83,7 @@ function self.open(player, category, name, player_table)
     titlebar.add{type='label', name='fe_window_title', style='frame_title', caption={'fe-gui.category-'..category}}.style.left_padding = 7
     titlebar.add{type='empty-widget', name='fe_draggable_space', style='fe_titlebar_draggable_space'}.drag_target = common.window
     common.search_button = titlebar.add{type='sprite-button', name='fe_search_button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark',
-                                        clicked_sprite='fe_search_dark', tooltip={'fe-gui.return-to-search'}}
+                                        clicked_sprite='fe_search_dark', tooltip={'gui.search'}}
     common.close_button = titlebar.add{type='sprite-button', name='fe_close_button', style='close_button', sprite='utility/close_white',
                                         hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
     -- BACKGROUND PANE AND INFO BAR
@@ -118,13 +118,19 @@ function self.open(player, category, name, player_table)
   gui_data.common_elems.window.force_auto_center()
   player.opened = gui_data.common_elems.window
   player_table.gui.info = gui_data
+  --
+  -- SEARCH HISTORY
+  --
+  table_insert(player_table.history.overall, 1, {category=category, name=name})
 end
 
 -- will prevent opening the GUI if dictionary translation is not finished
-function self.protected_open(player, category, name)
+function self.protected_open(player, category, name, options)
   local player_table = global.players[player.index]
   if player_table.flags.allow_open_gui then
-    self.open(player, category, name, player_table)
+    options = options or {}
+    options.player_table = player_table
+    self.open(player, category, name, options)
   else
     player.print{'fe-chat-message.translation-not-finished'}
     player_table.flags.tried_to_open_gui = true

@@ -66,6 +66,15 @@ for _,category in ipairs{'achievement', 'entity', 'equipment', 'fluid', 'item', 
       size = 32,
       mipmap_count = 2,
       flags = {'icon'}
+    },
+    {
+      type = 'sprite',
+      name = 'fe_category_'..category..'_yellow',
+      filename = '__Encyclopedia__/graphics/gui/search-category/'..category..'.png',
+      y = 32,
+      size = 32,
+      mipmap_count = 2,
+      flags = {'icon'}
     }
   }
 end

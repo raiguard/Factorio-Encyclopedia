@@ -248,7 +248,11 @@ end
 
 -- HISTORY
 
-
+function handlers.history.listbox_selection_changed(e)
+  local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[.*%].*%[img=(.*)/(.*)%].*$')
+  self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+  event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name})
+end
 
 -- ON LOAD
 
@@ -341,6 +345,17 @@ function self.open(player, options, player_table)
       gui_data.tabbed_pane.add{type='tab', name='fe_history_tab', style='fe_search_tab', caption={'fe-gui.history'}},
       history_pane
     )
+    -- populate listbox
+    local history = player_table.history.overall
+    local add_item = data.history_listbox.add_item
+    for i=1,#history do
+      local entry = history[i]
+      add_item('[img=fe_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '..player_table.dictionary[entry.category].translations[entry.name])
+    end
+    -- REGISTER HANDLERS
+    register_gui_handlers(player.index, 'history', {
+      {defines.events.on_gui_selection_state_changed, {name='listbox_selection_changed', gui_filters=data.history_listbox}}
+    })
     -- EXPORT DATA
     gui_data.history_elems = data
   end
