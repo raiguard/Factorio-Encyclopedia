@@ -11,6 +11,7 @@ local translation = require('lualib/translation')
 
 -- locals
 local serialise_localised_string = translation.serialise_localised_string
+local table_sort = table.sort
 
 -- modules
 local search_gui = require('scripts/gui/search')
@@ -202,7 +203,17 @@ end)
 event.register(translation.finish_event, function(e)
   local player_table = global.players[e.player_index]
   player_table.dictionary[e.dictionary_name] = e.dictionary
-  player_table.search[e.dictionary_name] = e.searchable
+  -- create sorted array of searchable table
+  local searchable = e.searchable
+  local sorted = {}
+  for localised,_ in pairs(searchable) do
+    sorted[#sorted+1] = localised
+  end
+  table_sort(sorted)
+  for i=1,#sorted do
+    sorted[i] = {localised=sorted[i], internal=searchable[sorted[i]]}
+  end
+  player_table.search[e.dictionary_name] = sorted
   if table_size(player_table.dictionary) == 10 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then

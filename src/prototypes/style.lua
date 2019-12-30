@@ -9,20 +9,21 @@ styles.fe_category_button = {
   horizontally_stretchable = 'on'
 }
 
--- styles.fe_button_selected = {
---   type = 'button_style',
---   parent = 'button',
---   default_font_color = button_hovered_font_color,
---   default_graphical_set = {
---     base = {position = {34,17}, corner_size=8},
---     shadow = default_dirt,
---     -- glow = default_glow(default_glow_color, 0.5)
---   }
--- }
+styles.fe_button_selected = {
+  type = 'button_style',
+  parent = 'button',
+  default_font_color = button_hovered_font_color,
+  default_graphical_set = {
+    base = {position = {34,17}, corner_size=8},
+    shadow = default_dirt,
+    -- glow = default_glow(default_glow_color, 0.5)
+  }
+}
 
 styles.fe_button_active = {
   type = 'button_style',
   parent = 'button',
+  -- graphical sets
   default_graphical_set = {
     base = {position={225,17}, corner_size=8},
     shadow = default_dirt
@@ -60,12 +61,12 @@ styles.fe_button_active = {
 --   }
 -- }
 
--- styles.fe_tool_button_selected = {
---   type = 'button_style',
---   parent = 'fe_button_selected',
---   padding = 2,
---   size = 28
--- }
+styles.fe_tool_button_selected = {
+  type = 'button_style',
+  parent = 'fe_button_selected',
+  padding = 2,
+  size = 28
+}
 
 styles.fe_tool_button_active = {
   type = 'button_style',
@@ -90,13 +91,27 @@ styles.fe_mock_listbox_item = {
   right_padding = 4
 }
 
+styles.fe_mock_listbox_item_selected = {
+  type = 'button_style',
+  parent = 'fe_mock_listbox_item',
+  -- graphical sets
+  default_font_color = button_hovered_font_color,
+  default_graphical_set = {
+    base = {position={34,17}, corner_size=8},
+  },
+  hovered_graphical_set = {
+    base = {position={34,17}, corner_size=8},
+    glow = default_glow(default_glow_color, 0.5)
+  }
+}
+
 styles.fe_mock_listbox_item_active = {
   type = 'button_style',
   parent = 'fe_mock_listbox_item',
   -- emulate text_offset
   top_padding = 1,
   bottom_padding = -1,
-  -- graphical set
+  -- graphical sets
   default_font_color = button_hovered_font_color,
   default_graphical_set = {
     base = {position={225,17}, corner_size=8},
@@ -113,19 +128,6 @@ styles.fe_mock_listbox_item_active = {
     shadow = default_dirt
   }
 }
-
--- styles.fe_mock_listbox_item_selected = {
---   type = 'button_style',
---   parent = 'fe_mock_listbox_item',
---   default_font_color = button_hovered_font_color,
---   default_graphical_set = {
---     base = {position={34,17}, corner_size=8},
---   },
---   hovered_graphical_set = {
---     base = {position={34,17}, corner_size=8},
---     glow = default_glow(default_glow_color, 0.5)
---   }
--- }
 
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
@@ -209,6 +211,12 @@ styles.fe_mock_listbox_frame = {
     overall_tiling_horizontal_padding = 4
   },
   vertically_stretchable = 'on'
+}
+
+styles.fe_search_results_mock_listbox_frame = {
+  type = 'frame_style',
+  parent = 'fe_mock_listbox_frame',
+  height = 196
 }
 
 styles.fe_history_mock_listbox_frame = {

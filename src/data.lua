@@ -22,12 +22,6 @@ data:extend{
   },
   {
     type = 'custom-input',
-    name = 'fe-nav-back',
-    key_sequence = 'LEFT',
-    order = 'bc'
-  },
-  {
-    type = 'custom-input',
     name = 'fe-nav-confirm',
     key_sequence = 'ENTER',
     order = 'bd'
