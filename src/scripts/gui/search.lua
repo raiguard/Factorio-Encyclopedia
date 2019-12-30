@@ -1,4 +1,4 @@
-local profiler = require('__profiler__/profiler.lua')
+-- local profiler = require('__profiler__/profiler.lua')
 
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- SEARCH GUI SCRIPTING
@@ -7,6 +7,7 @@ local profiler = require('__profiler__/profiler.lua')
 local event = require('lualib/event')
 
 -- locals
+local string_match = string.match
 local string_lower = string.lower
 local table_sort = table.sort
 
@@ -82,53 +83,52 @@ end
 
 -- update search results list
 function handlers.search.textfield_text_changed(e)
-  profiler.Start()
-  local player_table = global.players[e.player_index]
-  local gui_data = player_table.gui.search
-  local search_elems = gui_data.search_elems
-  local query = string_lower(e.text)
-  -- search dictionary
-  local search_table = player_table.search[gui_data.category]
-  local search_results = {}
-  if e.text == '' then -- just stick all of them in
-    for i=1,#search_table do
-      local t = search_table[i]
-      for i2=1,#t.internal do
-        search_results[#search_results+1] = t.internal[i2]
+  local profiler = game.create_profiler()
+  local prev_items = global.players[e.player_index].gui.search.search_elems.results_listbox.items
+  -- STRESS TESTING
+  for _=1,1000 do
+    local player_table = global.players[e.player_index]
+    local gui_data = player_table.gui.search
+    local search_elems = gui_data.search_elems
+    local query = string_lower(e.text)
+    local category = gui_data.category
+    local search_table = player_table.search[category]
+    local results_listbox = search_elems.results_listbox
+    local add_item = results_listbox.add_item
+    local set_item = results_listbox.set_item
+    local remove_item = results_listbox.remove_item
+    local items_length = #results_listbox.items
+    local i = 0
+    for i1=1,#search_table do
+      local t = search_table[i1]
+      local localised = t.localised
+      if string_match(localised, query) then
+        local internal = t.internal
+        for i2=1,#internal do
+          i = i + 1
+          local name = t.internal[i2]
+          local caption = '[img='..category..'/'..name..']  '..t.localised
+          if i <= items_length then
+            set_item(i, caption)
+          else
+            add_item(caption)
+          end
+        end
       end
     end
-  else -- match results
-    -- for i=1,#sorted_array do
-    --   if sorted_array[i]:find(query) then
-    --     for _,internal in ipairs(dictionary[sorted_array[i]]) do
-    --       search_results[#search_results+1] = internal
-    --     end
-    --   end
-    -- end
-  end
-  -- add results to table
-  local encyclopedia = global.encyclopedia[gui_data.category]
-  local scrollpane = search_elems.results_scrollpane
-  local items = scrollpane.children
-  local add = scrollpane.add
-  for i=1,#search_results do
-    local result = search_results[i]
-    local caption = {'', '[img='..gui_data.category..'/'..result..']  ', encyclopedia[result].prototype.localised_name}
-    local tooltip = {'', caption, {'fe-gui-general.click-to-view'}}
-    if items[i] then
-      items[i].caption = caption
-      items[i].tooltip = tooltip
-    else
-      add{type='button', name='fe_results_item_'..i, style='fe_mock_listbox_item', caption=caption, tooltip=tooltip}
+    for i=#results_listbox.items,i+1,-1 do
+      remove_item(i)
     end
+    profiler.stop()
+    local new_items = results_listbox.items
+    results_listbox.items = prev_items
+    prev_items = new_items
+    profiler.restart()
   end
-  -- remove any extraneous items from the table
-  if #search_results < #items then
-    for i=#search_results+1,#items do
-      items[i].destroy()
-    end
-  end
-  profiler.Stop()
+  -- END TESTING
+  profiler.stop()
+  profiler.divide(1000)
+  game.print(profiler)
 end
 
 -- enter keyboard navigation of search results
@@ -139,15 +139,15 @@ function handlers.search.textfield_confirmed(e)
   register_gui_handlers(e.player_index, 'search_nav', {
     {{'fe-nav-up', 'fe-nav-down'}, {name='up_down'}},
     {'fe-nav-confirm', {name='confirm'}},
-    {defines.events.on_gui_closed, {name='closed', gui_filters=search_elems.results_scrollpane}}
+    {defines.events.on_gui_closed, {name='closed', gui_filters=search_elems.results_listbox}}
   })
   -- set initial selected index
   gui_data.selected_result = 1
-  search_elems.results_scrollpane.children[1].style = 'fe_mock_listbox_item_selected'
+  search_elems.results_listbox.children[1].style = 'fe_mock_listbox_item_selected'
   -- set GUI state
   gui_data.state = 'select_result'
   -- set open GUI
-  game.get_player(e.player_index).opened = search_elems.results_scrollpane
+  game.get_player(e.player_index).opened = search_elems.results_listbox
 end
 
 -- exit keyboard navigation of results
@@ -158,7 +158,7 @@ function handlers.search.textfield_clicked(e)
     -- deregister navigation handlers
     deregister_gui_handlers(e.player_index, 'search_nav')
     -- unset selected index
-    search_elems.results_scrollpane.children[gui_data.selected_result].style = 'fe_mock_listbox_item'
+    search_elems.results_listbox.children[gui_data.selected_result].style = 'fe_mock_listbox_item'
     gui_data.selected_result = nil
     -- set GUI state
     gui_data.state = 'search'
@@ -226,12 +226,12 @@ function handlers.search_nav.up_down(e)
     e.used_keyboard_nav = true
     handlers.search.category_button_clicked(e)
   elseif gui_data.state == 'select_result' then
-    local children = search_elems.results_scrollpane.children
+    local children = search_elems.results_listbox.children
     children[gui_data.selected_result].style = 'fe_mock_listbox_item'
     gui_data.selected_result = util.clamp(gui_data.selected_result + delta, 1, #children)
     children[gui_data.selected_result].style = 'fe_mock_listbox_item_selected'
     -- scroll to element
-    search_elems.results_scrollpane.scroll_to_element(children[gui_data.selected_result])
+    search_elems.results_listbox.scroll_to_element(children[gui_data.selected_result])
   end
 end
 
@@ -244,7 +244,7 @@ function handlers.search_nav.confirm(e)
     e.used_keyboard_confirm = true
     handlers.search.category_button_clicked(e)
   elseif gui_data.state == 'select_result' then
-    e.element = search_elems.results_scrollpane.children[gui_data.selected_result]
+    e.element = search_elems.results_listbox.children[gui_data.selected_result]
     handlers.search.result_item_clicked(e)
   end
 end
@@ -306,8 +306,8 @@ function self.open(player, options, player_table)
     data.textfield = input_flow.add{type='textfield', name='fe_search_textfield', style='fe_search_textfield', clear_and_focus_on_right_click=true,
                                     lose_focus_on_confirm=true}
     -- results
-    data.results_scrollpane = search_flow.add{type='frame', name='fe_results_frame', style='fe_search_results_mock_listbox_frame'}
-    .add{type='scroll-pane', name='fe_results_scrollpane', style='fe_mock_listbox_scrollpane'}
+    data.results_listbox = search_flow.add{type='frame', name='fe_results_frame', style='fe_search_results_mock_listbox_frame'}
+    .add{type='list-box', name='fe_results_listbox'}
     -- ADD TAB
     gui_data.tabbed_pane.add_tab(
       gui_data.tabbed_pane.add{type='tab', name='fe_search_tab', style='fe_search_tab', caption={'fe-gui-search.search-tab-caption'}},
