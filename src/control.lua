@@ -9,10 +9,6 @@ local event = require('lualib/event')
 local mod_gui = require('mod-gui')
 local translation = require('lualib/translation')
 
--- locals
-local string_lower = string.lower
-local table_sort = table.sort
-
 -- globals
 open_info_gui_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
 open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only

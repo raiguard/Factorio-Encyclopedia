@@ -13,7 +13,7 @@ local table_remove = table.remove
 local self = {}
 local handlers = {common={}}
 local pages = {}
-for _,category in ipairs{'fluid', 'item', 'recipe'} do
+for _,category in ipairs(categories) do
   pages[category] = require('scripts/gui/info-pages/'..category)
 end
 
