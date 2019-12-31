@@ -23,7 +23,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local elems = {}
   elems.listboxes = {}
   local encyclopedia = global.encyclopedia
-  local item_data = encyclopedia.item[name]
+  local fluid_data = encyclopedia.fluid[name]
   local dictionary = player_table.dictionary
   local table = content_scrollpane.add{type='table', name='fe_table', style='fe_bordered_table', column_count=1}
   --
@@ -34,7 +34,7 @@ function self.create(player, player_table, content_scrollpane, name)
     content_flow.style.horizontal_spacing = 8
     for _,type in ipairs{'ingredient', 'product'} do
       local listbox, label = common_elems.listbox_with_label(content_flow, type)
-      local as_data = item_data['as_'..type]
+      local as_data = fluid_data['as_'..type]
       local add_item = listbox.add_item
       if as_data then
         table_sort(as_data)

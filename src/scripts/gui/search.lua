@@ -350,7 +350,8 @@ function self.open(player, options, player_table)
     local add_item = data.history_listbox.add_item
     for i=1,#history do
       local entry = history[i]
-      add_item('[img=fe_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '..player_table.dictionary[entry.category].translations[entry.name])
+      add_item('[img=fe_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '
+               ..(player_table.dictionary[entry.category].translations[entry.name] or entry.name))
     end
     -- REGISTER HANDLERS
     register_gui_handlers(player.index, 'history', {

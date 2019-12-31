@@ -13,8 +13,8 @@ local table_remove = table.remove
 local self = {}
 local handlers = {common={}}
 local pages = {}
-for _,category in ipairs(categories) do
-  _,pages[category] = pcall(require,'scripts/gui/info-pages/'..category)
+for _,category in ipairs{'fluid', 'item', 'recipe'} do
+  pages[category] = require('scripts/gui/info-pages/'..category)
 end
 
 -- -----------------------------------------------------------------------------
@@ -99,7 +99,8 @@ function self.open(player, category, name, source, player_table)
                                       hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark'}
     common.forward_button = titlebar.add{type='sprite-button', name='fe_forward_button', style='close_button', sprite='fe_nav_forward',
                                          hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark'}
-    titlebar.add{type='label', name='fe_window_title', style='frame_title', caption={'fe-gui.category-'..category}}.style.left_padding = 7
+    common.window_title = titlebar.add{type='label', name='fe_window_title', style='frame_title'}
+    common.window_title.style.left_padding = 7
     titlebar.add{type='empty-widget', name='fe_draggable_space', style='fe_titlebar_draggable_space'}.drag_target = common.window
     common.search_button = titlebar.add{type='sprite-button', name='fe_search_button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark',
                                         clicked_sprite='fe_search_dark', tooltip={'gui.search'}}
@@ -200,7 +201,7 @@ function self.update_content(player, player_table, category, name, source, initi
   if session_history.position > 1 then
     forward_button.enabled = true
     local forward_obj = session_history[session_history.position-1]
-    forward_button.tooltip = {'fe-gui.forward-to', string_lower(dictionary[forward_obj.category].translations[forward_obj.name])}
+    forward_button.tooltip = {'fe-gui.forward-to', string_lower(dictionary[forward_obj.category].translations[forward_obj.name] or forward_obj.name)}
   else
     forward_button.enabled = false
     forward_button.tooltip = ''
@@ -210,11 +211,12 @@ function self.update_content(player, player_table, category, name, source, initi
   if back_obj.source then
     back_button.tooltip = {'fe-gui.back-to', {'fe-remote-interface.history-source-name-'..back_obj.source}}
   else
-    back_button.tooltip = {'fe-gui.back-to', string_lower(dictionary[back_obj.category].translations[back_obj.name])}
+    back_button.tooltip = {'fe-gui.back-to', string_lower(dictionary[back_obj.category].translations[back_obj.name] or back_obj.name)}
   end
   --
-  -- INFO BAR
+  -- TITLEBAR AND INFO BAR
   --
+  common_elems.window_title.caption = {'fe-gui.category-'..category}
   common_elems.info_sprite.sprite = category..'/'..name
   common_elems.info_name.caption = dictionary[category].translations[name]
   --

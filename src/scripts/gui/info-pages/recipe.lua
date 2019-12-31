@@ -1,5 +1,5 @@
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
--- ITEM INFO GUI
+-- RECIPE INFO GUI
 
 local common_elems = require('scripts/gui/common-elements')
 local common_handlers = require('scripts/gui/common-handlers')
@@ -23,27 +23,34 @@ function self.create(player, player_table, content_scrollpane, name)
   local elems = {}
   elems.listboxes = {}
   local encyclopedia = global.encyclopedia
-  local item_data = encyclopedia.item[name]
+  local recipe_data = encyclopedia.recipe[name]
   local dictionary = player_table.dictionary
   local table = content_scrollpane.add{type='table', name='fe_table', style='fe_bordered_table', column_count=1}
-  --
-  -- USAGE IN RECIPES
-  --
-  do
-    local content_flow = common_elems.standard_cell(table, 'usage_in_recipes', {'fe-gui.usage-in-recipes'}, 'horizontal')
+  for row,cell in pairs{items={'ingredients', 'products'}, machines_techs={'made_in', 'unlocked_by'}} do
+    local content_flow = common_elems.standard_cell(table, row)
     content_flow.style.horizontal_spacing = 8
-    for _,type in ipairs{'ingredient', 'product'} do
+    for _,type in ipairs(cell) do
       local listbox, label = common_elems.listbox_with_label(content_flow, type)
-      local as_data = item_data['as_'..type]
       local add_item = listbox.add_item
-      if as_data then
-        table_sort(as_data)
-        for i=1,#as_data do
-          local recipe_name = as_data[i]
-          add_item('[img=recipe/'..recipe_name..']  '..(dictionary.recipe.translations[recipe_name] or recipe_name))
+      local objects
+      if row == 'items' then
+        objects = recipe_data.prototype[type]
+      else
+        objects = recipe_data[type]
+      end
+      if objects then
+        for i=1,#objects do
+          local object = objects[i]
+          if type == 'made_in' then
+            add_item('[img=entity/'..object..']  '..dictionary.entity.translations[object] or object)
+          elseif type == 'unlocked_by' then
+            add_item('[img=technology/'..object..']  '..dictionary.technology.translations[object] or object)
+          else
+            add_item('[img='..object.type..'/'..object.name..']  '..dictionary[object.type].translations[object.name] or object.name)
+          end
         end
       end
-      label.caption = {'fe-gui.as-'..type, as_data and #as_data or 0}
+      label.caption = {'fe-gui.'..type:gsub('_', '-'), objects and #objects or 0}
       elems.listboxes[#elems.listboxes+1] = listbox
     end
   end
