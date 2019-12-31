@@ -46,7 +46,7 @@ function self.create(player, player_table, content_scrollpane, name)
           elseif type == 'unlocked_by' then
             add_item('[img=technology/'..object..']  '..dictionary.technology.translations[object] or object)
           else
-            add_item('[img='..object.type..'/'..object.name..']  '..dictionary[object.type].translations[object.name] or object.name)
+            add_item('[img='..object.type..'/'..object.name..']  '..object.amount..'x '..dictionary[object.type].translations[object.name] or object.name)
           end
         end
       end
