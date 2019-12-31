@@ -25,7 +25,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local encyclopedia = global.encyclopedia
   local achievement_data = encyclopedia.achievement[name]
   local dictionary = player_table.dictionary
-  local table = content_scrollpane.add{type='table', name='fe_table', style='fe_bordered_table', column_count=1}
+  local table = content_scrollpane.add{type='table', name='fe_table', style='fe_content_table', column_count=1}
   return elems, {}
 end
 

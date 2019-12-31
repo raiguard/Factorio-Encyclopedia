@@ -254,6 +254,16 @@ styles.fe_listbox_label = {
   left_padding = 2
 }
 
+styles.fe_table_label = {
+  type = 'label_style',
+  font = 'default-semibold'
+}
+
+styles.fe_table_value = {
+  type = 'label_style',
+  single_line = false
+}
+
 -- -----------------------------------------------------------------------------
 -- LIST BOX STYLES
 
@@ -340,6 +350,18 @@ styles.fe_bordered_table = {
   margin = 2,
   right_cell_padding = 6,
   bottom_cell_padding = 6
+}
+
+styles.fe_content_table = {
+  type = 'table_style',
+  margin = 6,
+  -- right_cell_padding = 6,
+  bottom_cell_padding = 6
+}
+
+styles.fe_info_table = {
+  type = 'table_style',
+  column_alignments = {{column=1, alignment='left'}, {column=2, alignment='right'}}
 }
 
 -- -----------------------------------------------------------------------------

@@ -26,4 +26,17 @@ function self.standard_cell(parent, name, label_caption, flow_direction, flow_st
   return content_flow, {cell_flow=cell_flow, content_flow=content_flow, label=label}
 end
 
+-- standard object info table entry
+function self.info_table_entry(parent, name, value)
+  include_pusher = include_pusher or true
+  local flow = parent.add{type='flow', name='fe_cell_'..name, style='fe_vertically_centered_flow', direction='horizontal'}
+  local label = flow.add{type='label', name='fe_label_'..name, style='fe_table_label', caption={'fe-gui.'..name:gsub('_', '-')}}
+  flow.add{type='empty-widget', name='fe_pusher', style='fe_horizontal_pusher'}
+  local value_label
+  if value then
+     value_label = flow.add{type='label', name='fe_value_label', style='fe_table_value', caption=value}
+  end
+  return flow, {flow=flow, label=label, value_label=value_label}
+end
+
 return self

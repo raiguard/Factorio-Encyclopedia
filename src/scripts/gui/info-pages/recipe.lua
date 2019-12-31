@@ -25,7 +25,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local encyclopedia = global.encyclopedia
   local recipe_data = encyclopedia.recipe[name]
   local dictionary = player_table.dictionary
-  local table = content_scrollpane.add{type='table', name='fe_table', style='fe_bordered_table', column_count=1}
+  local table = content_scrollpane.add{type='table', name='fe_table', style='fe_content_table', column_count=1}
   for row,cell in pairs{items={'ingredients', 'products'}, machines_techs={'made_in', 'unlocked_by'}} do
     local content_flow = common_elems.standard_cell(table, row)
     content_flow.style.horizontal_spacing = 8

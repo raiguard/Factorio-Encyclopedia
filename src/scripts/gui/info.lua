@@ -112,7 +112,9 @@ function self.open(player, category, name, source, player_table)
     common.info_sprite = common.info_bar.add{type='sprite', name='fe_object_icon', style='fe_object_icon', sprite=category..'/'..name}
     common.info_name = common.info_bar.add{type='label', name='fe_object_name', style='subheader_caption_label', caption=translations[name]}
     -- CONTENT SCROLLPANE
-    common.content_scrollpane = common.background_pane.add{type='scroll-pane', name='fe_content_scrollpane', style='scroll_pane_under_subheader'}
+    common.content_scrollpane = common.background_pane.add{type='scroll-pane', name='fe_content_scrollpane', style='scroll_pane_under_subheader',
+                                                           horizontal_scroll_policy='never'}
+    common.content_scrollpane.style.width = 478 -- perfect for two columns of listboxes
     -- ACTION BAR
     common.action_bar = common.background_pane.add{type='frame', name='fe_action_bar', style='subfooter_frame', direction='horizontal'}
     common.action_bar.add{type='empty-widget', name='fe_pusher', style='fe_horizontal_pusher'}
