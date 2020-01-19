@@ -5,8 +5,8 @@
 -- DOCUMENTATION: https://github.com/raiguard/Factorio-SmallMods/wiki/Translation-Library-Documentation
 
 -- dependencies
-local event = require('lualib/event')
-local util = require('__core__/lualib/util')
+local event = require('lualib.event')
+local util = require('__core__.lualib.util')
 
 -- locals
 local math_floor = math.floor

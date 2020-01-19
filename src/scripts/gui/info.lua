@@ -2,7 +2,7 @@
 -- INFO GUI
 
 -- dependencies
-local event = require('lualib/event')
+local event = require('lualib.event')
 
 -- locals
 local string_lower = string.lower
