@@ -116,6 +116,7 @@ local function build_encyclopedia()
     encyclopedia[category], translation_data[category] = setup(category)
     -- category
     translation_data.category[#translation_data.category+1] = {localised={'fe-gui.category-'..category}, internal=category}
+    translation_data.category[#translation_data.category+1] = {localised={'fe-gui.category-'..category..'-plural'}, internal=category..'-plural'}
   end
   -- other
   translation_data.other = {

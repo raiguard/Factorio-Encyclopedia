@@ -17,6 +17,7 @@ local table_merge = util.merge
 -- settings
 local handlers = {}
 local templates = {}
+local build_data = {}
 
 -- objects
 local self = {}
@@ -44,72 +45,81 @@ local function recursive_load(parent, t, output, name, player_index)
       t = util.merge{get_subtable(template[i], templates), t}
     end
   end
-  -- format element table
-  local elem_t = table_deepcopy(t)
-  local style = elem_t.style
-  local iterate_style = false
-  if style and type(style) == 'table' then
-    elem_t.style = style.name
-    iterate_style = true
-  end
-  elem_t.children = nil
-  elem_t.handlers = nil
-  elem_t.save_as = nil
-  -- create element
-  local elem = parent.add(elem_t)
-  -- set runtime styles
-  if iterate_style then
-    for k,v in pairs(t.style) do
-      if k ~= 'name' then
-        elem.style[k] = v
+  local elem
+  -- skip all of this if it's a tab-and-content
+  if t.type ~= 'tab-and-content' then
+    -- format element table
+    local elem_t = table_deepcopy(t)
+    local style = elem_t.style
+    local iterate_style = false
+    if style and type(style) == 'table' then
+      elem_t.style = style.name
+      iterate_style = true
+    end
+    elem_t.children = nil
+    elem_t.handlers = nil
+    elem_t.save_as = nil
+    -- create element
+    elem = parent.add(elem_t)
+    -- set runtime styles
+    if iterate_style then
+      for k,v in pairs(t.style) do
+        if k ~= 'name' then
+          elem.style[k] = v
+        end
       end
     end
-  end
-  -- apply modifications
-  if t.mods then
-    for k,v in pairs(t.mods) do
-      elem[k] = v
-    end
-  end
-  -- add to output table
-  if t.save_as then
-    if type(t.save_as) == 'boolean' then
-      t.save_as = t.handlers
-    end
-    output[t.save_as] = elem
-  end
-  -- register handlers
-  if t.handlers then
-    local prefix = name..'.'
-    local elem_index = elem.index
-    local path
-    local append_path
-    if type(t.handlers) == 'string' then
-      path = prefix..t.handlers
-      append_path=true
-      t.handlers = get_subtable(prefix..t.handlers, handlers)
-    end
-    for n,func in pairs(t.handlers) do
-      local con_name = elem.index..'_'..n
-      local event_name = string_gsub(n, 'on_', 'on_gui_')
-      if type(func) == 'string' then
-        path = prefix..func
-        func = get_subtable(prefix..func, handlers)
+    -- apply modifications
+    if t.mods then
+      for k,v in pairs(t.mods) do
+        elem[k] = v
       end
-      event[event_name](func, {name=con_name, player_index=player_index, gui_filters=elem_index})
-      if not global_data[name] then global_data[name] = {} end
-      if not global_data[name][player_index] then global_data[name][player_index] = {} end
-      table_insert(global_data[name][player_index], {name=con_name, element=elem, path=append_path and (path..'.'..n) or path})
     end
-  end
-  -- add children
-  local children = t.children
-  if children then
-    for i=1,#children do
-      output = recursive_load(elem, children[i], output, name, player_index)
+    -- add to output table
+    if t.save_as then
+      if type(t.save_as) == 'boolean' then
+        t.save_as = t.handlers
+      end
+      output[t.save_as] = elem
     end
+    -- register handlers
+    if t.handlers then
+      local prefix = name..'.'
+      local elem_index = elem.index
+      local path
+      local append_path
+      if type(t.handlers) == 'string' then
+        path = prefix..t.handlers
+        append_path=true
+        t.handlers = get_subtable(prefix..t.handlers, handlers)
+      end
+      for n,func in pairs(t.handlers) do
+        local con_name = elem.index..'_'..n
+        local event_name = string_gsub(n, 'on_', 'on_gui_')
+        if type(func) == 'string' then
+          path = prefix..func
+          func = get_subtable(prefix..func, handlers)
+        end
+        event[event_name](func, {name=con_name, player_index=player_index, gui_filters=elem_index})
+        if not global_data[name] then global_data[name] = {} end
+        if not global_data[name][player_index] then global_data[name][player_index] = {} end
+        table_insert(global_data[name][player_index], {name=con_name, element=elem, path=append_path and (path..'.'..n) or path})
+      end
+    end
+    -- add children
+    local children = t.children
+    if children then
+      for i=1,#children do
+        output = recursive_load(elem, children[i], output, name, player_index)
+      end
+    end
+  else
+    local tab, content
+    output, tab = recursive_load(parent, t.tab, output, name, player_index)
+    output, content = recursive_load(parent, t.content, output, name, player_index)
+    parent.add_tab(tab, content)
   end
-  return output
+  return output, elem
 end
 
 -- -----------------------------------------------------------------------------
@@ -139,6 +149,7 @@ end)
 -- OBJECT
 
 function self.create(parent, name, player_index, template)
+  build_data = {}
   return recursive_load(parent, template, {}, name, player_index)
 end
 
