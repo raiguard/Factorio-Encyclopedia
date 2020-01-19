@@ -121,11 +121,11 @@ local function build_encyclopedia()
   translation_data.other = {
     {localised={'gui.search'}, internal='search'}
   }
-  global.__translation.translation_data = translation_data
+  global.__lualib.translation.translation_data = translation_data
 end
 
 local function translate_whole(player, ignore_error)
-  for name,data in pairs(global.__translation.translation_data) do
+  for name,data in pairs(global.__lualib.translation.translation_data) do
     translation.start(player, name, data, {ignore_error=ignore_error})
   end
 end
