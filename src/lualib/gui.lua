@@ -33,6 +33,29 @@ local function get_subtable(s, t)
   return o
 end
 
+local function register_handlers(gui_name, elem_handlers, options)
+  local prefix = gui_name..'.'
+  local path
+  if type(elem_handlers) == 'string' then
+    path = prefix..elem_handlers
+    append_path=true
+    elem_handlers = get_subtable(gui_name..'.'..elem_handlers, handlers)
+  end
+  for n,func in pairs(elem_handlers) do
+    local t = table.deepcopy(options)
+    t.name = gui_name..'_'..t.name..'_'..n
+    if type(func) == 'string' then
+      path = prefix..func
+      func = get_subtable(prefix..func, handlers)
+    end
+    if defines.events[n] then n = defines.events[n] end
+    event.register(n, func, t)
+    if not global_data[gui_name] then global_data[gui_name] = {} end
+    if not global_data[gui_name][t.player_index] then global_data[gui_name][t.player_index] = {} end
+    global_data[gui_name][t.player_index][t.name] = {gui_filters=t.gui_filters, path=append_path and (path..'.'..n) or path}
+  end
+end
+
 -- recursively load a GUI template
 local function recursive_load(parent, t, output, name, player_index)
   -- load template(s)
@@ -84,27 +107,7 @@ local function recursive_load(parent, t, output, name, player_index)
     end
     -- register handlers
     if t.handlers then
-      local prefix = name..'.'
-      local elem_index = elem.index
-      local path
-      local append_path
-      if type(t.handlers) == 'string' then
-        path = prefix..t.handlers
-        append_path=true
-        t.handlers = get_subtable(prefix..t.handlers, handlers)
-      end
-      for n,func in pairs(t.handlers) do
-        local con_name = elem.index..'_'..n
-        local event_name = string_gsub(n, 'on_', 'on_gui_')
-        if type(func) == 'string' then
-          path = prefix..func
-          func = get_subtable(prefix..func, handlers)
-        end
-        event[event_name](func, {name=con_name, player_index=player_index, gui_filters=elem_index})
-        if not global_data[name] then global_data[name] = {} end
-        if not global_data[name][player_index] then global_data[name][player_index] = {} end
-        table_insert(global_data[name][player_index], {name=con_name, element=elem, path=append_path and (path..'.'..n) or path})
-      end
+      register_handlers(name, t.handlers, {name=elem.index, player_index=player_index, gui_filters=elem.index})
     end
     -- add children
     local children = t.children
@@ -135,10 +138,11 @@ event.on_load(function()
   local con_registry = global.__lualib.event
   for _,pl in pairs(global_data) do
     for _,el in pairs(pl) do
-      for i=1,#el do
-        local t = el[i]
-        local registry = con_registry[t.name]
-        event.register(registry.id, get_subtable(t.path, handlers), {name=t.name})
+      for n,t in pairs(el) do
+        local registry = con_registry[n]
+        if registry then
+          event.register(registry.id, get_subtable(t.path, handlers), {name=t.name, gui_filters=t.gui_filters})
+        end
       end
       break
     end
@@ -190,6 +194,12 @@ function self.add_handlers(...)
     handlers[arg[1]] = arg[2]
   end
   return self
+end
+
+self.register_handlers = register_handlers
+
+function self.deregister_handlers(name, handlers, player_index)
+
 end
 
 return self
