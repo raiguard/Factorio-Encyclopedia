@@ -158,13 +158,17 @@ end
 function self.destroy(parent, gui_name, player_index)
   -- deregister handlers
   local gui_tables = global_data[gui_name]
-  local list = gui_tables[player_index]
-  for n,_ in pairs(list) do
-    deregister_handlers(gui_name, string_gsub(n, '^gui%.'..gui_name..'%.', ''), player_index, list)
-  end
-  gui_tables[player_index] = nil
-  if table_size(gui_tables) == 0 then
-    global_data[gui_name] = nil
+  if gui_tables then
+    local list = gui_tables[player_index]
+    if list then
+      for n,_ in pairs(list) do
+        deregister_handlers(gui_name, string_gsub(n, '^gui%.'..gui_name..'%.', ''), player_index, list)
+      end
+      gui_tables[player_index] = nil
+      if table_size(gui_tables) == 0 then
+        global_data[gui_name] = nil
+      end
+    end
   end
   -- destroy GUI
   parent.destroy()

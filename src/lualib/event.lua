@@ -134,7 +134,7 @@ function event.register(id, handler, options)
       for i=1,#players do
         if players[i] == player_index then
           -- don't do anything
-          log('Tried to re-register a conditional event for player '..player_index..', skipping!')
+          log('Tried to re-register \''..name..'\' for player '..player_index..', skipping!')
           return event
         end
       end
@@ -145,7 +145,7 @@ function event.register(id, handler, options)
       if player_index then
         t.gui_filters[player_index] = gui_filters
       else
-        error('Must specify a player_index when using gui filters on a conditional event.')
+        error('Must specify a player_index when using gui filters on a conditional event: '..name)
       end
     end
     table_insert(t.players, player_index)

@@ -25,7 +25,46 @@ local handlers = {}
 
 -- actually populate the table
 handlers = {
-
+  close_button = {
+    on_gui_click = function(e)
+      self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+    end
+  },
+  nav_backward_button = {
+    on_gui_click = function(e)
+      local player_table = global.players[e.player_index]
+      local session_history = player_table.history.session
+      local back_obj = session_history[session_history.position+1]
+      if back_obj.source then
+        self.close(game.get_player(e.player_index), player_table.gui)
+        event.raise(reopen_source_event, {player_index=e.player_index, source=back_obj.source})
+      else
+        session_history.position = session_history.position + 1
+        -- update content
+        self.update_content(game.get_player(e.player_index), player_table, back_obj.category, back_obj.name, nil, nil, true)
+      end
+    end
+  },
+  nav_forward_button = {
+    on_gui_click = function(e)
+      local player_table = global.players[e.player_index]
+      local session_history = player_table.history.session
+      local forward_obj = session_history[session_history.position-1]
+      session_history.position = session_history.position - 1
+      -- update content
+      self.update_content(game.get_player(e.player_index), player_table, forward_obj.category, forward_obj.name, nil, nil, true)
+    end
+  },
+  search_button = {
+    on_gui_click = function(e)
+      event.raise(open_search_gui_event, {player_index=e.player_index})
+    end
+  },
+  window = {
+    on_gui_closed = function(e)
+      self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+    end
+  }
 }
 
 gui.add_handlers('info', handlers)
@@ -47,18 +86,19 @@ function self.open(player, category, name, source, player_table)
 
   -- CREATE BASE GUI STRUCTURE
   local gui_data = gui.create(player.gui.screen, 'info', player.index,
-    {type='frame', style='dialog_frame', direction='vertical', save_as='window', children={
+    {type='frame', style='dialog_frame', direction='vertical', handlers='window', save_as=true, children={
       -- titlebar
       {type='flow', style='fe_titlebar_flow', children={
         {type='sprite-button', style='close_button', sprite='fe_nav_backward', hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark',
-          save_as='nav_backward_button'},
+          handlers='nav_backward_button', save_as=true},
         {type='sprite-button', style='close_button', sprite='fe_nav_forward', hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark',
-          save_as='nav_forward_button'},
+          handlers='nav_forward_button', save_as=true},
         {type='label', style={name='frame_title', left_padding=7}, caption='TEMP', save_as='window_title'},
         {type='empty-widget', style='fe_titlebar_draggable_space', save_as='titlebar_drag_handle'},
         {type='sprite-button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark',
-          tooltip={'gui.search'}},
-        {type='sprite-button', style='close_button', sprite='utility/close_white', hovered_sprite='utility/close_black', clicked_sprite='utility/close_black'}
+          tooltip={'gui.search'}, handlers='search_button'},
+        {type='sprite-button', style='close_button', sprite='utility/close_white', hovered_sprite='utility/close_black', clicked_sprite='utility/close_black',
+          handlers='close_button'}
       }},
       {type='frame', style='window_content_frame_packed', direction='vertical', children={
         -- info bar
@@ -84,7 +124,7 @@ function self.open(player, category, name, source, player_table)
   gui_data.window.force_auto_center()
   player.opened = gui_data.window
   -- export data
-  player_table.gui.info = {common=gui_data}
+  player_table.gui.info = {base=gui_data}
   
   -- POPULATE CONTENT
   self.update_content(player, player_table, category, name, source, true)
@@ -94,6 +134,14 @@ end
 function self.protected_open(player, category, name, source)
   local player_table = global.players[player.index]
   if player_table.flags.allow_open_gui then
+    if player_table.gui.info then
+      if source then
+        self.close(player, player_table.gui)
+      else
+        self.update_content(player, player_table, category, name)
+        return
+      end
+    end
     self.open(player, category, name, source, player_table)
   else
     player.print{'fe-chat-message.translation-not-finished'}
@@ -102,8 +150,12 @@ function self.protected_open(player, category, name, source)
 end
 
 function self.close(player, gui_data)
-  gui.destroy(gui_data.search.window, 'info', player.index)
-  gui_data.search = nil
+  -- destroy content / deregister handlers
+  pages[gui_data.info.category].destroy(player, gui_data.info.base.content_scrollpane)
+  -- destroy base
+  gui.destroy(gui_data.info.base.window, 'info', player.index)
+  -- remove data from global
+  gui_data.info = nil
 end
 
 function self.toggle(player, category, name, source)
@@ -118,7 +170,7 @@ end
 -- updates the content of the window and navigation buttons. also manages the search history
 function self.update_content(player, player_table, category, name, source, initial_content, nav_button)
   local gui_data = player_table.gui.info
-  local common_elems = gui_data.common
+  local base_elems = gui_data.base
   local dictionary = player_table.dictionary
 
   -- UPDATE SEARCH HISTORY
@@ -142,7 +194,7 @@ function self.update_content(player, player_table, category, name, source, initi
   end
 
   -- UPDATE TITLEBAR
-  local forward_button = common_elems.nav_forward_button
+  local forward_button = base_elems.nav_forward_button
   if session_history.position > 1 then
     forward_button.enabled = true
     local forward_obj = session_history[session_history.position-1]
@@ -151,28 +203,31 @@ function self.update_content(player, player_table, category, name, source, initi
     forward_button.enabled = false
     forward_button.tooltip = ''
   end
-  local back_button = common_elems.nav_backward_button
+  local back_button = base_elems.nav_backward_button
   local back_obj = session_history[session_history.position+1]
   if back_obj.source then
     back_button.tooltip = {'fe-gui.back-to', {'fe-remote-interface.history-source-name-'..back_obj.source}}
   else
     back_button.tooltip = {'fe-gui.back-to', string_lower(dictionary[back_obj.category].translations[back_obj.name] or back_obj.name)}
   end
-  common_elems.window_title.caption = {'fe-gui.category-'..category}
+  base_elems.window_title.caption = {'fe-gui.category-'..category}
 
   -- UPDATE INFO BAR
-  common_elems.info_sprite.sprite = category..'/'..name
-  common_elems.info_name.caption = dictionary[category].translations[name]
+  base_elems.info_sprite.sprite = category..'/'..name
+  base_elems.info_name.caption = dictionary[category].translations[name]
 
   -- UPDATE MAIN CONTENT
   -- destroy previous content if it's there
-  local content_scrollpane = common_elems.content_scrollpane
+  local content_scrollpane = base_elems.content_scrollpane
   if not initial_content then
-    -- clear content and deregister handlers
-    game.print('CLEAR CONTENT')
+    pages[gui_data.category].destroy(player, content_scrollpane)
   end
   -- build new content
-  
+  gui_data.page = pages[category].create(player, player_table, content_scrollpane, name)
+
+  -- UPDATE GLOBAL DATA
+  gui_data.category = category
+  gui_data.name = name
 
 end
 

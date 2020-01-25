@@ -1,8 +1,9 @@
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ITEM INFO GUI
 
-local common_elems = require('scripts/gui/common-elements')
-local common_handlers = require('scripts/gui/common-handlers')
+-- dependencies
+local event = require('lualib/event')
+local gui = require('lualib/gui')
 
 -- locals
 local table_sort = table.sort
@@ -18,17 +19,46 @@ local general_data = {
 
 -- objects
 local self = {}
-local handlers = {}
 
 -- -----------------------------------------------------------------------------
--- GUI EVENT HANDLERS
+-- GUI DATA
 
-handlers.listbox_selection_changed = common_handlers.open_listbox_content
-handlers.object_button_clicked = common_handlers.open_button_content
+gui.add_handlers('item', {
+  demo_button = {
+    on_gui_click = function(e)
+      event.raise(open_info_gui_event, {player_index=e.player_index, category='item', object_name='assembling-machine-1'})
+    end
+  }
+})
 
 -- -----------------------------------------------------------------------------
 -- OBJECT
 
+function self.create(player, player_table, content_scrollpane, name)
+  -- CREATE GUI STRUCTURE
+  local gui_data = gui.create(content_scrollpane, 'item', player.index,
+    {type='table', style='fe_content_table', column_count=1, children={
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='label', caption='DEBUG'},
+      {type='button', caption='Assembling machine 1', handlers='demo_button'}
+    }}
+  )
+  return gui_data
+end
+
+function self.destroy(player, content_scrollpane)
+  gui.destroy(content_scrollpane.children[1], 'item', player.index)
+end
+
+--[[
 function self.create(player, player_table, content_scrollpane, name)
   local elems = {}
   elems.listboxes = {}
@@ -97,7 +127,6 @@ function self.create(player, player_table, content_scrollpane, name)
     {defines.events.on_gui_click, {name='object_button_clicked', gui_filters=elems.buttons}}
   }
 end
-
-self.handlers = handlers
+]]
 
 return self
