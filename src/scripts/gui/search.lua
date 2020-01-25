@@ -38,6 +38,7 @@ local function nav_up_down(e)
   elseif gui_data.state == 'select_result' then
     local listbox = gui_data.results_listbox
     listbox.selected_index = util.clamp(listbox.selected_index+delta, 1, #listbox.items)
+    listbox.scroll_to_item(listbox.selected_index)
   end
 end
 
@@ -115,21 +116,20 @@ handlers = {
     on_gui_click = function(e)
       local gui_data = global.players[e.player_index].gui.search
       if gui_data.state == 'select_result' or gui_data.state == 'select_category' then
-        local search_elems = gui_data.search_elems
         -- -- deregister navigation handlers
         -- deregister_gui_handlers(e.player_index, 'search_nav')
         -- unset selected index
-        search_elems.results_listbox.selected_index = 0
+        gui_data.results_listbox.selected_index = 0
         if gui_data.selected_category then
-          search_elems.category_frame.children[gui_data.selected_category].style = 'fe_tool_button_active'
+          gui_data.category_frame.children[gui_data.selected_category].style = 'fe_tool_button_active'
           gui_data.selected_category = nil
         end
         -- set GUI state
         gui_data.state = 'search'
-        game.get_player(e.player_index).opened = search_elems.textfield
+        game.get_player(e.player_index).opened = gui_data.textfield
         -- focus textfield if needed
         if e.closed_from_nav then
-          search_elems.textfield.focus()
+          gui_data.textfield.focus()
         end
       end
     end,
@@ -224,7 +224,7 @@ function self.open(player, options, player_table)
             {type='flow', style='fe_search_flow', direction='vertical', children={
               {type='flow', style='fe_search_input_flow', direction='horizontal', children={
                 {type='flow', style='fe_paddingless_flow', save_as='choose_elem_button_container', children={
-                  {type='choose-elem-button', style='filter_slot_button', elem_type=options.default_category or 'item', handlers='choose_elem_button',
+                  {type='choose-elem-button', style='quick_bar_slot_button', elem_type=options.default_category or 'item', handlers='choose_elem_button',
                     save_as=true}
                 }},
                 {type='textfield', style='fe_search_textfield', clear_and_focus_on_right_click=true, lose_focus_on_confirm=true, handlers='textfield',
@@ -305,7 +305,7 @@ end
 function self.reset_search_pane(player_index, player_table, used_mouse)
   local gui_data = player_table.gui.search
   gui_data.choose_elem_button_container.clear()
-  gui_data.choose_elem_button = gui_data.choose_elem_button_container.add{type='choose-elem-button', style='filter_slot_button', elem_type=gui_data.category}
+  gui_data.choose_elem_button = gui_data.choose_elem_button_container.add{type='choose-elem-button', style='quick_bar_slot_button', elem_type=gui_data.category}
   gui_data.results_listbox.selected_index = 0
   gui_data.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[gui_data.category]..'...'
   handlers.textfield.on_gui_text_changed{player_index=player_index, text=''}
