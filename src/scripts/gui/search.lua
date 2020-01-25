@@ -69,7 +69,9 @@ handlers = {
   },
   history_listbox = {
     on_gui_selection_state_changed = function(e)
-      game.print(serpent.block(e))
+      local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[.*%].*%[img=(.*)/(.*)%].*$')
+      self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_history'})
     end
   },
   navigation_shortcuts = {
@@ -94,7 +96,10 @@ handlers = {
       handlers.textfield.on_gui_click(e)
     end,
     on_gui_selection_state_changed = function(e)
-      game.print(serpent.block(e))
+      local gui_data = global.players[e.player_index].gui
+      local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
+      self.close(game.get_player(e.player_index), gui_data)
+      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_search'})
     end
   },
   tabbed_pane = {
@@ -116,8 +121,8 @@ handlers = {
     on_gui_click = function(e)
       local gui_data = global.players[e.player_index].gui.search
       if gui_data.state == 'select_result' or gui_data.state == 'select_category' then
-        -- -- deregister navigation handlers
-        -- deregister_gui_handlers(e.player_index, 'search_nav')
+        -- deregister navigation handlers
+        gui.deregister_handlers('search', 'navigation_shortcuts', e.player_index)
         -- unset selected index
         gui_data.results_listbox.selected_index = 0
         if gui_data.selected_category then
@@ -213,10 +218,11 @@ gui.add_handlers('search', handlers)
 function self.open(player, options, player_table)
   options = options or {}
   player_table = player_table or global.players[player.index]
-  -- create GUI structure
+
+  -- CREATE GUI STRUCTURE
   local gui_data = gui.create(player.gui.screen, 'search', player.index,
     {type='frame', style='fe_empty_frame', handlers='window', save_as=true, children={
-      {type='tabbed-pane', style='fe_search_tabbed_pane', children={
+      {type='tabbed-pane', style='fe_search_tabbed_pane', save_as='tabbed_pane', children={
         -- search tab
         {type='tab-and-content', tab={type='tab', style='fe_search_tab', caption={'gui.search'}}, content=
           {type='frame', style='window_content_frame_packed', direction='horizontal', children={
@@ -231,7 +237,7 @@ function self.open(player, options, player_table)
                   save_as=true}
               }},
               {type='frame', style='fe_search_results_listbox_frame', children={
-                {type='list-box', style='fe_listbox_for_keyboard_nav', save_as='results_listbox'}
+                {type='list-box', style='fe_listbox_for_keyboard_nav', handlers='results_listbox', save_as=true}
               }}
             }}
           }}
@@ -244,13 +250,15 @@ function self.open(player, options, player_table)
               {type='sprite-button', style='red_icon_button', sprite='utility/trash', mods={enabled=false}, save_as='history_delete_button'}
             }},
             {type='frame', style='fe_history_listbox_frame', children={
-              {type='list-box', style='fe_listbox', save_as='history_listbox'}
+              {type='list-box', style='fe_listbox', handlers='history_listbox', save_as=true}
             }}
           }}
         }
       }}
     }}
   )
+
+  -- SET INITIAL STATE
   -- populate categories and set active category
   local category_frame = gui_data.category_frame
   local category_buttons = {}
@@ -261,13 +269,20 @@ function self.open(player, options, player_table)
   category_frame[(options.category or 'item')..'_button'].style = 'fe_tool_button_active'
   -- register handler for category switching
   gui.register_handlers('search', 'category_buttons', {name='category_buttons', player_index=player.index, gui_filters=category_buttons})
-  -- set textfield text and focused state
-  local textfield = gui_data.textfield
-  textfield.text = player_table.dictionary.other.translations.search..' '
-    ..player_table.dictionary.category.translations[(options.category or 'item')..'-plural']..'...'
-  textfield.select_all()
-  textfield.focus()
-  player.opened = textfield
+  -- set active tab
+  if options.active_tab and options.active_tab == 'history' then
+    -- open tab
+    gui_data.tabbed_pane.selected_tab_index = 2
+    player.opened = gui_data.window
+  else
+    -- set textfield text and focused state
+    local textfield = gui_data.textfield
+    textfield.text = options.search_text or player_table.dictionary.other.translations.search..' '
+      ..player_table.dictionary.category.translations[(options.category or 'item')..'-plural']..'...'
+    textfield.select_all()
+    textfield.focus()
+    player.opened = textfield
+  end
   -- center GUI
   gui_data.window.force_auto_center()
   -- gui data
@@ -275,6 +290,16 @@ function self.open(player, options, player_table)
   gui_data.category = options.category or 'item'
   -- add data to global table
   player_table.gui.search = gui_data
+  -- populate results listbox
+  handlers.textfield.on_gui_text_changed{player_index=player.index, text=options.search_text or ''}
+  -- populate history listbox
+  local history = player_table.history.overall
+  local add_item = gui_data.history_listbox.add_item
+  for i=1,#history do
+    local entry = history[i]
+    add_item('[img=fe_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '
+      ..(player_table.dictionary[entry.category].translations[entry.name] or entry.name))
+  end
 end
 
 -- will prevent opening the GUI if dictionary translation is not finished
@@ -309,7 +334,9 @@ function self.reset_search_pane(player_index, player_table, used_mouse)
   gui_data.results_listbox.selected_index = 0
   gui_data.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[gui_data.category]..'...'
   handlers.textfield.on_gui_text_changed{player_index=player_index, text=''}
-  if used_mouse then -- set GUI state and focus textfield
+
+  -- set GUI state and focus textfield
+  if used_mouse then
     gui_data.state = 'search'
     gui_data.textfield.select_all()
     gui_data.textfield.focus()
