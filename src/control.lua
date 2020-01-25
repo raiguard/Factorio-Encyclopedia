@@ -1,5 +1,5 @@
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
--- FACTORIO ENCYCLOPEDIA CONTROL SCRIPTING
+-- ENCYCLOPEDIA CONTROL SCRIPTING
 
  -- debug adapter
 pcall(require,'__debugadapter__/debugadapter.lua')
@@ -125,15 +125,15 @@ local function build_encyclopedia()
   global.__lualib.translation.translation_data = translation_data
 end
 
-local function translate_whole(player, ignore_error)
+local function translate_whole(player)
   for name,data in pairs(global.__lualib.translation.translation_data) do
-    translation.start(player, name, data, {ignore_error=ignore_error})
+    translation.start(player, name, data)
   end
 end
 
-local function translate_for_all_players(ignore_error)
+local function translate_for_all_players()
   for _,player in ipairs(game.connected_players) do
-    translate_whole(player, ignore_error)
+    translate_whole(player)
   end
 end
 
