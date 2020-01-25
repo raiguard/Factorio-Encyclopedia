@@ -1,8 +1,8 @@
 -- -------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- ITEM INFO GUI
 
-local common_elems = require('scripts.gui.common-elements')
-local common_handlers = require('scripts.gui.common-handlers')
+local common_elems = require('scripts/gui/common-elements')
+local common_handlers = require('scripts/gui/common-handlers')
 
 -- locals
 local table_sort = table.sort

@@ -5,9 +5,9 @@
 pcall(require,'__debugadapter__/debugadapter.lua')
 
 -- dependencies
-local event = require('lualib.event')
+local event = require('lualib/event')
 local mod_gui = require('mod-gui')
-local translation = require('lualib.translation')
+local translation = require('lualib/translation')
 
 -- globals
 open_info_gui_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
@@ -16,8 +16,8 @@ reopen_source_event = event.generate_id('reopen_source') -- used internally and 
 categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
 
 -- modules
-local info_gui = require('scripts.gui.info')
-local search_gui = require('scripts.gui.search')
+local info_gui = require('scripts/gui/info')
+local search_gui = require('scripts/gui/search')
 
 -- -----------------------------------------------------------------------------
 -- ENCYCLOPEDIA DATA

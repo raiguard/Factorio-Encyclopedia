@@ -2,8 +2,8 @@
 -- SEARCH GUI
 
 -- dependencies
-local event = require('lualib.event')
-local gui = require('lualib.gui')
+local event = require('lualib/event')
+local gui = require('lualib/gui')
 
 -- locals
 local string_match = string.match

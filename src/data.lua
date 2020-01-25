@@ -28,8 +28,8 @@ data:extend{
   }
 }
 
-require('prototypes.sprite')
-require('prototypes.style')
+require('prototypes/sprite')
+require('prototypes/style')
 
 -- DEBUGGING TOOL
 if mods['debugadapter'] then
