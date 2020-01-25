@@ -332,7 +332,7 @@ function self.reset_search_pane(player_index, player_table, used_mouse)
   gui_data.choose_elem_button_container.clear()
   gui_data.choose_elem_button = gui_data.choose_elem_button_container.add{type='choose-elem-button', style='quick_bar_slot_button', elem_type=gui_data.category}
   gui_data.results_listbox.selected_index = 0
-  gui_data.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[gui_data.category]..'...'
+  gui_data.textfield.text = player_table.dictionary.other.translations.search..' '..player_table.dictionary.category.translations[gui_data.category..'-plural']..'...'
   handlers.textfield.on_gui_text_changed{player_index=player_index, text=''}
 
   -- set GUI state and focus textfield
