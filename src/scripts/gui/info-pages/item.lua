@@ -12,12 +12,15 @@ local common_handlers = require('scripts/gui/common-handlers')
 local table_sort = table.sort
 
 local general_data = {
-  -- 'localised_description',
   stack_size = true,
-  fuel_value = true,
   place_result = 'place_result',
   place_as_equipment_result = 'place_as_equipment_result',
-  place_as_tile_result = 'place_as_tile_result'
+  place_as_tile_result = 'place_as_tile_result',
+  fuel_value = true,
+  fuel_category = true,
+  burnt_result = 'item',
+  inventory_size_bonus = true,
+  durability = true
 }
 
 -- objects
@@ -43,18 +46,19 @@ function self.create(player, player_table, content_scrollpane, name)
   local item_data = encyclopedia.item[name]
   local dictionary = player_table.dictionary
 
+  local generic_buttons = {}
+  local generic_listboxes = {}
+
   -- CREATE GUI STRUCTURE
   local gui_data = gui.create(content_scrollpane, 'item', player.index,
     {type='table', style='enc_content_table', column_count=1, children={
-      -- general info table
       {type='table', style='bordered_table', column_count=1, save_as='general_info_table'},
-      -- recipe usages
-      {type='flow', save_as='recipe_usages_cell'}
+      {type='flow', save_as='recipe_usages_cell'},
+      {type='flow', save_as='module_effects_cell'}
     }}
   )
 
-  -- POPULATE INFO TABLE
-  local generic_buttons = {}
+  -- GENERAL INFO TABLE
   local info_table = gui_data.general_info_table
   for key,action in pairs(general_data) do
     if action == true then
@@ -79,11 +83,17 @@ function self.create(player, player_table, content_scrollpane, name)
         generic_buttons[#generic_buttons+1] = value_flow.add{type='button',
           caption='[img=tile/'..place_result.name..']  '..dictionary.tile.translations[place_result.name]}
       end
+    elseif action == 'item' then
+      local item = item_data.prototype[key]
+      if item then
+        local value_flow = common_elems.info_table_entry(info_table, key)
+        generic_buttons[#generic_buttons+1] = value_flow.add{type='button',
+          caption='[img=item/'..item.name..']  '..dictionary.item.translations[item.name]}
+      end
     end
   end
 
-  -- POPULATE RECIPE USAGES
-  local generic_listboxes = {}
+  -- RECIPE USAGES
   if item_data.as_ingredient or item_data.as_product then
     local cell_flow = common_elems.standard_cell(gui_data.recipe_usages_cell, {'fe-gui.usage-in-recipes'}, 'horizontal')
     cell_flow.style.horizontal_spacing = 8
@@ -105,6 +115,35 @@ function self.create(player, player_table, content_scrollpane, name)
     gui_data.recipe_usages_cell.destroy()
   end
 
+  -- MODULE INFO
+  if item_data.prototype.module_effects then
+    local cell_flow = common_elems.standard_cell(gui_data.module_effects_cell, {'fe-gui.module-info'}, 'horizontal')
+    cell_flow.style.horizontal_spacing = 8
+    -- effects
+    local effects_flow = cell_flow.add{type='flow', direction='vertical'}
+    effects_flow.add{type='label', style='enc_listbox_label', caption={'fe-gui.module-effects'}}
+    local effects_table = effects_flow.add{type='table', style='bordered_table', column_count=1}
+    effects_table.style.minimal_width = 225
+    for n,e in pairs(item_data.prototype.module_effects) do
+      common_elems.info_table_entry(effects_table, n, tostring(math.floor(e.bonus*100))..'%')
+    end
+    -- limitations
+    local limitations = item_data.prototype.limitations
+    if #limitations > 0 then
+      local recipes_listbox = common_elems.listbox_with_label(cell_flow, nil, {'fe-gui.allowed-recipes'})
+      local add_item = recipes_listbox.add_item
+      local recipe_translations = dictionary.recipe.translations
+      for _,n in ipairs(limitations) do
+        add_item('[img=recipe/'..n..']  '..(recipe_translations[n] or 'untranslated'))
+      end
+      generic_listboxes[#generic_listboxes+1] = recipes_listbox
+    else
+      effects_flow.add{type='label', caption={'fe-gui.allowed-in-all-recipes'}}
+    end
+  else
+    gui_data.module_effects_cell.destroy()
+  end
+
   -- SET UP GENERIC HANDLERS
   gui.register_handlers('item', 'generic_buttons', {name='generic_buttons', player_index=player.index, gui_filters=generic_buttons})
   gui.register_handlers('item', 'generic_listboxes', {name='generic_listboxes', player_index=player.index, gui_filters=generic_listboxes})
@@ -115,44 +154,5 @@ end
 function self.destroy(player, content_scrollpane)
   gui.destroy(content_scrollpane.children[1], 'item', player.index)
 end
-
---[[
-function self.create(player, player_table, content_scrollpane, name)
-  local elems = {}
-  elems.listboxes = {}
-  elems.buttons = {}
-  local encyclopedia = global.encyclopedia
-  local item_data = encyclopedia.item[name]
-  local dictionary = player_table.dictionary
-  local table = content_scrollpane.add{type='table', name='enc_table', style='enc_content_table', column_count=1}
-  --
-  -- USAGE IN RECIPES
-  --
-  do
-    if item_data.as_ingredient or item_data.as_product then
-      local content_flow = common_elems.standard_cell(table, 'usage_in_recipes', {'fe-gui.usage-in-recipes'}, 'horizontal')
-      content_flow.style.horizontal_spacing = 8
-      for _,type in ipairs{'ingredient', 'product'} do
-        local listbox, label = common_elems.listbox_with_label(content_flow, type)
-        local as_data = item_data['as_'..type]
-        local add_item = listbox.add_item
-        if as_data then
-          table_sort(as_data)
-          for i=1,#as_data do
-            local recipe_name = as_data[i]
-            add_item('[img=recipe/'..recipe_name..']  '..(dictionary.recipe.translations[recipe_name] or recipe_name))
-          end
-        end
-        label.caption = {'fe-gui.as-'..type, as_data and #as_data or 0}
-        elems.listboxes[#elems.listboxes+1] = listbox
-      end
-    end
-  end
-  return elems, {
-    {defines.events.on_gui_selection_state_changed, {name='listbox_selection_changed', gui_filters=elems.listboxes}},
-    {defines.events.on_gui_click, {name='object_button_clicked', gui_filters=elems.buttons}}
-  }
-end
-]]
 
 return self
