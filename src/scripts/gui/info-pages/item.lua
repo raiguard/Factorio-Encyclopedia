@@ -49,7 +49,7 @@ function self.create(player, player_table, content_scrollpane, name)
       -- general info table
       {type='table', style='bordered_table', column_count=1, save_as='general_info_table'},
       -- recipe usages
-      {type='flow', direction='vertical', save_as='recipe_usages_cell'}
+      {type='flow', save_as='recipe_usages_cell'}
     }}
   )
 

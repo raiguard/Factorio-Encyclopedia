@@ -42,8 +42,34 @@ function self.create(player, player_table, content_scrollpane, name)
   local generic_listboxes = {}
 
   local gui_data = gui.create(content_scrollpane, 'fluid', player.index,
-    {type='button', caption='demo button, please ignore'}
+  {type='table', style='fe_content_table', column_count=1, children={
+    -- recipe usages
+    {type='flow', save_as='recipe_usages_cell'}
+  }}
   )
+
+  -- POPULATE RECIPE USAGES
+  local generic_listboxes = {}
+  if fluid_data.as_ingredient or fluid_data.as_product then
+    local cell_flow = common_elems.standard_cell(gui_data.recipe_usages_cell, {'fe-gui.usage-in-recipes'}, 'horizontal')
+    cell_flow.style.horizontal_spacing = 8
+    for _,type in ipairs{'ingredient', 'product'} do
+      local listbox, label = common_elems.listbox_with_label(cell_flow)
+      local as_data = fluid_data['as_'..type]
+      local add_item = listbox.add_item
+      if as_data then
+        table_sort(as_data)
+        for i=1,#as_data do
+          local recipe_name = as_data[i]
+          add_item('[img=recipe/'..recipe_name..']  '..(dictionary.recipe.translations[recipe_name] or recipe_name))
+        end
+      end
+      label.caption = {'fe-gui.as-'..type, as_data and #as_data or 0}
+      generic_listboxes[#generic_listboxes+1] = listbox
+    end
+  else
+    gui_data.recipe_usages_cell.destroy()
+  end
 
   -- SET UP GENERIC HANDLERS
   gui.register_handlers('item', 'generic_buttons', {name='generic_buttons', player_index=player.index, gui_filters=generic_buttons})
