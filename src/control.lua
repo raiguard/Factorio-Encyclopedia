@@ -152,7 +152,7 @@ local function setup_player(player)
     },
     gui = {}
   }
-  local button = mod_gui.get_button_flow(player).add{type='sprite-button', name='fe_mod_gui_button', style=mod_gui.button_style, sprite='fe_logo',
+  local button = mod_gui.get_button_flow(player).add{type='sprite-button', name='enc_mod_gui_button', style=mod_gui.button_style, sprite='enc_logo',
                                                      tooltip={'fe-gui.encyclopedia'}}
   global.players[player.index].gui.mod_gui = {top_button=button}
 end
@@ -216,7 +216,7 @@ end)
 
 event.on_gui_click(function(e)
   search_gui.toggle(game.get_player(e.player_index))
-end, {gui_filters='fe_mod_gui_button'})
+end, {gui_filters='enc_mod_gui_button'})
 
 event.register(open_search_gui_event, function(e)
   search_gui.protected_open(game.get_player(e.player_index), e.options)
@@ -227,10 +227,10 @@ event.register(open_info_gui_event, function(e)
 end)
 
 event.register(reopen_source_event, function(e)
-  if e.source == 'fe_search' then
+  if e.source == 'enc_search' then
     -- reopen search GUI
     search_gui.protected_open(game.get_player(e.player_index))
-  elseif e.source == 'fe_history' then
+  elseif e.source == 'enc_history' then
     -- reopen history GUI
     search_gui.protected_open(game.get_player(e.player_index), {open_to_history=true})
   end

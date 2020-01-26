@@ -3,13 +3,13 @@ local styles = data.raw['gui-style'].default
 -- -----------------------------------------------------------------------------
 -- BUTTON STYLES
 
-styles.fe_category_button = {
+styles.enc_category_button = {
   type = 'button_style',
   horizontal_align = 'center',
   horizontally_stretchable = 'on'
 }
 
-styles.fe_button_selected = {
+styles.enc_button_selected = {
   type = 'button_style',
   parent = 'button',
   default_font_color = button_hovered_font_color,
@@ -20,7 +20,7 @@ styles.fe_button_selected = {
   }
 }
 
-styles.fe_button_active = {
+styles.enc_button_active = {
   type = 'button_style',
   parent = 'button',
   -- graphical sets
@@ -40,21 +40,21 @@ styles.fe_button_active = {
   }
 }
 
-styles.fe_tool_button_selected = {
+styles.enc_tool_button_selected = {
   type = 'button_style',
-  parent = 'fe_button_selected',
+  parent = 'enc_button_selected',
   padding = 2,
   size = 28
 }
 
-styles.fe_tool_button_active = {
+styles.enc_tool_button_active = {
   type = 'button_style',
-  parent = 'fe_button_active',
+  parent = 'enc_button_active',
   padding = 2,
   size = 28
 }
 
-styles.fe_close_button_active = {
+styles.enc_close_button_active = {
   type = 'button_style',
   parent = 'close_button',
   default_graphical_set = {
@@ -74,17 +74,17 @@ styles.fe_close_button_active = {
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES
 
-styles.fe_horizontal_pusher = {
+styles.enc_horizontal_pusher = {
   type = 'empty_widget_style',
   horizontally_stretchable = 'on'
 }
 
-styles.fe_vertical_pusher = {
+styles.enc_vertical_pusher = {
   type = 'empty_widget_style',
   vertically_stretchable = 'on'
 }
 
-styles.fe_titlebar_draggable_space = {
+styles.enc_titlebar_draggable_space = {
   type = 'empty_widget_style',
   parent = 'draggable_space_header',
   horizontally_stretchable = 'on',
@@ -96,7 +96,7 @@ styles.fe_titlebar_draggable_space = {
 -- -----------------------------------------------------------------------------
 -- FRAME STYLES
 
-styles.fe_toolbar_frame = {
+styles.enc_toolbar_frame = {
   type = 'frame_style',
   parent = 'subheader_frame',
   horizontal_flow_style = {
@@ -106,7 +106,7 @@ styles.fe_toolbar_frame = {
   }
 }
 
-styles.fe_toolbar_left = {
+styles.enc_toolbar_left = {
   type = 'frame_style',
   graphical_set = {
     base = {
@@ -131,7 +131,7 @@ styles.fe_toolbar_left = {
   right_padding = 1
 }
 
-styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target work
+styles.enc_empty_frame = { -- completely empty frame, purely to make drag_target work
   type = 'frame_style',
   margin = 0,
   padding = 0,
@@ -140,7 +140,7 @@ styles.fe_empty_frame = { -- completely empty frame, purely to make drag_target 
   use_header_filler = false
 }
 
-styles.fe_listbox_frame = {
+styles.enc_listbox_frame = {
   type = 'frame_style',
   padding = 0,
   width = 225,
@@ -165,15 +165,15 @@ styles.fe_listbox_frame = {
   vertically_stretchable = 'on'
 }
 
-styles.fe_search_results_listbox_frame = {
+styles.enc_search_results_listbox_frame = {
   type = 'frame_style',
-  parent = 'fe_listbox_frame',
+  parent = 'enc_listbox_frame',
   height = 196
 }
 
-styles.fe_history_listbox_frame = {
+styles.enc_history_listbox_frame = {
   type = 'frame_style',
-  parent = 'fe_listbox_frame',
+  parent = 'enc_listbox_frame',
   height = 224,
   width = 279,
   graphical_set = {
@@ -193,7 +193,7 @@ styles.fe_history_listbox_frame = {
 -- -----------------------------------------------------------------------------
 -- FLOW STYLES
 
-styles.fe_titlebar_flow = {
+styles.enc_titlebar_flow = {
   type = 'horizontal_flow_style',
   direction = 'horizontal',
   horizontally_stretchable = 'on',
@@ -201,24 +201,24 @@ styles.fe_titlebar_flow = {
   top_margin = -3
 }
 
-styles.fe_vertically_centered_flow = {
+styles.enc_vertically_centered_flow = {
   type = 'horizontal_flow_style',
   vertical_align = 'center'
 }
 
-styles.fe_search_flow = {
+styles.enc_search_flow = {
   type = 'vertical_flow_style',
   padding = 8,
   vertical_spacing = 8
 }
 
-styles.fe_search_input_flow = {
+styles.enc_search_input_flow = {
   type = 'horizontal_flow_style',
-  parent = 'fe_vertically_centered_flow',
+  parent = 'enc_vertically_centered_flow',
   horizontal_spacing = 6
 }
 
-styles.fe_paddingless_flow = {
+styles.enc_paddingless_flow = {
   type = 'horizontal_flow_style',
   margin = 0,
   padding = 0
@@ -227,7 +227,7 @@ styles.fe_paddingless_flow = {
 -- -----------------------------------------------------------------------------
 -- IMAGE STYLES
 
-styles.fe_object_icon = {
+styles.enc_object_icon = {
   type = 'image_style',
   stretch_image_to_widget_size = true,
   size = 28,
@@ -237,18 +237,18 @@ styles.fe_object_icon = {
 -- -----------------------------------------------------------------------------
 -- LABEL STYLES
 
-styles.fe_listbox_label = {
+styles.enc_listbox_label = {
   type = 'label_style',
   font = 'default-semibold',
   left_padding = 2
 }
 
-styles.fe_table_label = {
+styles.enc_table_label = {
   type = 'label_style',
   font = 'default-semibold'
 }
 
-styles.fe_table_value = {
+styles.enc_table_value = {
   type = 'label_style',
   single_line = false
 }
@@ -256,7 +256,7 @@ styles.fe_table_value = {
 -- -----------------------------------------------------------------------------
 -- LIST BOX STYLES
 
-styles.fe_listbox_item = {
+styles.enc_listbox_item = {
   type = 'button_style',
   parent = 'list_box_item',
   horizontally_stretchable = 'on',
@@ -264,7 +264,7 @@ styles.fe_listbox_item = {
   right_padding = 4
 }
 
-styles.fe_listbox = {
+styles.enc_listbox = {
   type = 'list_box_style',
   parent = 'list_box',
   scroll_pane_style = { -- invisible scroll pane
@@ -276,16 +276,16 @@ styles.fe_listbox = {
   },
   item_style = {
     type = 'button_style',
-    parent = 'fe_listbox_item'
+    parent = 'enc_listbox_item'
   }
 }
 
-styles.fe_listbox_for_keyboard_nav = {
+styles.enc_listbox_for_keyboard_nav = {
   type = 'list_box_style',
-  parent = 'fe_listbox',
+  parent = 'enc_listbox',
   item_style = {
     type = 'button_style',
-    parent = 'fe_listbox_item',
+    parent = 'enc_listbox_item',
     selected_graphical_set = {
       base = {position = {34,17}, corner_size=8},
       shadow = default_dirt
@@ -301,7 +301,7 @@ styles.fe_listbox_for_keyboard_nav = {
 -- -----------------------------------------------------------------------------
 -- TABBED PANE STYLES
 
-styles.fe_search_tabbed_pane = {
+styles.enc_search_tabbed_pane = {
   type = 'tabbed_pane_style',
   vertical_spacing = 0,
   padding = 0,
@@ -318,7 +318,7 @@ styles.fe_search_tabbed_pane = {
   }
 }
 
-styles.fe_search_tab = {
+styles.enc_search_tab = {
   type = "tab_style",
   parent = "tab",
   height = 32,
@@ -333,7 +333,7 @@ styles.fe_search_tab = {
 -- -----------------------------------------------------------------------------
 -- TABLE STYLES
 
-styles.fe_bordered_table = {
+styles.enc_bordered_table = {
   type = 'table_style',
   parent = 'bordered_table',
   margin = 2,
@@ -341,14 +341,14 @@ styles.fe_bordered_table = {
   bottom_cell_padding = 6
 }
 
-styles.fe_content_table = {
+styles.enc_content_table = {
   type = 'table_style',
   margin = 6,
   -- right_cell_padding = 6,
   bottom_cell_padding = 6
 }
 
-styles.fe_info_table = {
+styles.enc_info_table = {
   type = 'table_style',
   column_alignments = {{column=1, alignment='left'}, {column=2, alignment='right'}}
 }
@@ -356,7 +356,7 @@ styles.fe_info_table = {
 -- -----------------------------------------------------------------------------
 -- TEXTFIELD STYLES
 
-styles.fe_search_textfield = {
+styles.enc_search_textfield = {
   type = 'textbox_style',
   width = 180
 }

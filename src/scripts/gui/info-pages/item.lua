@@ -45,7 +45,7 @@ function self.create(player, player_table, content_scrollpane, name)
 
   -- CREATE GUI STRUCTURE
   local gui_data = gui.create(content_scrollpane, 'item', player.index,
-    {type='table', style='fe_content_table', column_count=1, children={
+    {type='table', style='enc_content_table', column_count=1, children={
       -- general info table
       {type='table', style='bordered_table', column_count=1, save_as='general_info_table'},
       -- recipe usages
@@ -124,7 +124,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local encyclopedia = global.encyclopedia
   local item_data = encyclopedia.item[name]
   local dictionary = player_table.dictionary
-  local table = content_scrollpane.add{type='table', name='fe_table', style='fe_content_table', column_count=1}
+  local table = content_scrollpane.add{type='table', name='enc_table', style='enc_content_table', column_count=1}
   --
   -- USAGE IN RECIPES
   --

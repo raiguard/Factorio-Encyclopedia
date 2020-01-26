@@ -42,7 +42,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local generic_listboxes = {}
 
   local gui_data = gui.create(content_scrollpane, 'recipe', player.index,
-    {type='table', style='fe_content_table', column_count=1, save_as='content_table'}
+    {type='table', style='enc_content_table', column_count=1, save_as='content_table'}
   )
 
   -- SET UP RECIPE INFO

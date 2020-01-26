@@ -62,7 +62,7 @@ handlers = {
       local gui_data = player_table.gui.info
       gui_data.pinned = not gui_data.pinned
       if gui_data.pinned then
-        e.element.style = 'fe_close_button_active'
+        e.element.style = 'enc_close_button_active'
         player.opened = nil
       else
         e.element.style = 'close_button'
@@ -106,24 +106,24 @@ function self.open(player, category, name, source, player_table)
   local gui_data = gui.create(player.gui.screen, 'info', player.index,
     {type='frame', style='dialog_frame', direction='vertical', handlers='window', save_as=true, children={
       -- titlebar
-      {type='flow', style='fe_titlebar_flow', children={
-        {type='sprite-button', style='close_button', sprite='fe_nav_backward', hovered_sprite='fe_nav_backward_dark', clicked_sprite='fe_nav_backward_dark',
+      {type='flow', style='enc_titlebar_flow', children={
+        {type='sprite-button', style='close_button', sprite='enc_nav_backward', hovered_sprite='enc_nav_backward_dark', clicked_sprite='enc_nav_backward_dark',
           handlers='nav_backward_button', save_as=true},
-        {type='sprite-button', style='close_button', sprite='fe_nav_forward', hovered_sprite='fe_nav_forward_dark', clicked_sprite='fe_nav_forward_dark',
+        {type='sprite-button', style='close_button', sprite='enc_nav_forward', hovered_sprite='enc_nav_forward_dark', clicked_sprite='enc_nav_forward_dark',
           handlers='nav_forward_button', save_as=true},
         {type='label', style={name='frame_title', left_padding=7}, caption='TEMP', save_as='window_title'},
-        {type='empty-widget', style='fe_titlebar_draggable_space', save_as='titlebar_drag_handle'},
-        {type='sprite-button', style='close_button', sprite='fe_pin', hovered_sprite='fe_pin_dark', clicked_sprite='fe_pin_dark', tooltip={'fe-gui.keep-open'},
+        {type='empty-widget', style='enc_titlebar_draggable_space', save_as='titlebar_drag_handle'},
+        {type='sprite-button', style='close_button', sprite='enc_pin', hovered_sprite='enc_pin_dark', clicked_sprite='enc_pin_dark', tooltip={'fe-gui.keep-open'},
           handlers='pin_button'},
-        {type='sprite-button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark',
+        {type='sprite-button', style='close_button', sprite='enc_search', hovered_sprite='enc_search_dark', clicked_sprite='enc_search_dark',
           tooltip={'gui.search'}, handlers='search_button'},
         {type='sprite-button', style='close_button', sprite='utility/close_white', hovered_sprite='utility/close_black', clicked_sprite='utility/close_black',
           handlers='close_button'}
       }},
       {type='frame', style='window_content_frame_packed', direction='vertical', children={
         -- info bar
-        {type='frame', style='fe_toolbar_frame', direction='horizontal', children={
-          {type='sprite', style='fe_object_icon', sprite=category..'/'..name, save_as='info_sprite'},
+        {type='frame', style='enc_toolbar_frame', direction='horizontal', children={
+          {type='sprite', style='enc_object_icon', sprite=category..'/'..name, save_as='info_sprite'},
           {type='label', style='subheader_caption_label', caption=translations[name], save_as='info_name'},
           {template='pushers.horizontal'}
         }},

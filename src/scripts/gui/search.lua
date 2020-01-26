@@ -31,7 +31,7 @@ local function nav_up_down(e)
     local children = gui_data.category_frame.children
     children[gui_data.selected_category].style = 'tool_button'
     gui_data.selected_category = util.clamp(gui_data.selected_category + delta, 1, #children)
-    children[gui_data.selected_category].style = 'fe_tool_button_selected'
+    children[gui_data.selected_category].style = 'enc_tool_button_selected'
     e.element = children[gui_data.selected_category]
     e.used_keyboard_nav = true
     handlers.category_buttons.on_gui_click(e)
@@ -49,7 +49,7 @@ handlers = {
       local category = e.element.elem_type
       local object_name = e.element.elem_value
       self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_search'})
+      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='enc_search'})
     end
   },
   category_buttons = {
@@ -58,7 +58,7 @@ handlers = {
       local player_table = global.players[e.player_index]
       local gui_data = player_table.gui.search
       if not e.used_keyboard_nav then
-        e.element.style = 'fe_tool_button_active'
+        e.element.style = 'enc_tool_button_active'
         if not e.used_keyboard_confirm then
           gui_data.category_frame[gui_data.category..'_button'].style = 'tool_button'
         end
@@ -71,7 +71,7 @@ handlers = {
     on_gui_selection_state_changed = function(e)
       local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[.*%].*%[img=(.*)/(.*)%].*$')
       self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
-      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_history'})
+      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='enc_history'})
     end
   },
   navigation_shortcuts = {
@@ -99,7 +99,7 @@ handlers = {
       local gui_data = global.players[e.player_index].gui
       local _,_,category,object_name = e.element.get_item(e.element.selected_index):find('^%[img=(.*)/(.*)%].*$')
       self.close(game.get_player(e.player_index), gui_data)
-      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='fe_search'})
+      event.raise(open_info_gui_event, {player_index=e.player_index, category=category, object_name=object_name, source='enc_search'})
     end
   },
   tabbed_pane = {
@@ -126,7 +126,7 @@ handlers = {
         -- unset selected index
         gui_data.results_listbox.selected_index = 0
         if gui_data.selected_category then
-          gui_data.category_frame.children[gui_data.selected_category].style = 'fe_tool_button_active'
+          gui_data.category_frame.children[gui_data.selected_category].style = 'enc_tool_button_active'
           gui_data.selected_category = nil
         end
         -- set GUI state
@@ -147,7 +147,7 @@ handlers = {
         for i,elem in ipairs(gui_data.category_frame.children) do
           if elem.style.name:find('active') then
             gui_data.selected_category = i
-            elem.style = 'fe_tool_button_selected'
+            elem.style = 'enc_tool_button_selected'
             break
           end
         end
@@ -221,36 +221,36 @@ function self.open(player, options, player_table)
 
   -- CREATE GUI STRUCTURE
   local gui_data = gui.create(player.gui.screen, 'search', player.index,
-    {type='frame', style='fe_empty_frame', handlers='window', save_as=true, children={
-      {type='tabbed-pane', style='fe_search_tabbed_pane', save_as='tabbed_pane', children={
+    {type='frame', style='enc_empty_frame', handlers='window', save_as=true, children={
+      {type='tabbed-pane', style='enc_search_tabbed_pane', save_as='tabbed_pane', children={
         -- search tab
-        {type='tab-and-content', tab={type='tab', style='fe_search_tab', caption={'gui.search'}}, content=
+        {type='tab-and-content', tab={type='tab', style='enc_search_tab', caption={'gui.search'}}, content=
           {type='frame', style='window_content_frame_packed', direction='horizontal', children={
-            {type='frame', style='fe_toolbar_left', direction='vertical', save_as='category_frame'},
-            {type='flow', style='fe_search_flow', direction='vertical', children={
-              {type='flow', style='fe_search_input_flow', direction='horizontal', children={
-                {type='flow', style='fe_paddingless_flow', save_as='choose_elem_button_container', children={
+            {type='frame', style='enc_toolbar_left', direction='vertical', save_as='category_frame'},
+            {type='flow', style='enc_search_flow', direction='vertical', children={
+              {type='flow', style='enc_search_input_flow', direction='horizontal', children={
+                {type='flow', style='enc_paddingless_flow', save_as='choose_elem_button_container', children={
                   {type='choose-elem-button', style='quick_bar_slot_button', elem_type=options.default_category or 'item', handlers='choose_elem_button',
                     save_as=true}
                 }},
-                {type='textfield', style='fe_search_textfield', clear_and_focus_on_right_click=true, lose_focus_on_confirm=true, handlers='textfield',
+                {type='textfield', style='enc_search_textfield', clear_and_focus_on_right_click=true, lose_focus_on_confirm=true, handlers='textfield',
                   save_as=true}
               }},
-              {type='frame', style='fe_search_results_listbox_frame', children={
-                {type='list-box', style='fe_listbox_for_keyboard_nav', handlers='results_listbox', save_as=true}
+              {type='frame', style='enc_search_results_listbox_frame', children={
+                {type='list-box', style='enc_listbox_for_keyboard_nav', handlers='results_listbox', save_as=true}
               }}
             }}
           }}
         },
         -- history tab
-        {type='tab-and-content', tab={type='tab', style='fe_search_tab', caption={'fe-gui.history'}}, content=
+        {type='tab-and-content', tab={type='tab', style='enc_search_tab', caption={'fe-gui.history'}}, content=
           {type='frame', style='window_content_frame_packed', direction='vertical', children={
-            {type='frame', style='fe_toolbar_frame', direction='horizontal', children={
+            {type='frame', style='enc_toolbar_frame', direction='horizontal', children={
               {type='empty-widget', style={horizontally_stretchable=true}},
               {type='sprite-button', style='red_icon_button', sprite='utility/trash', mods={enabled=false}, save_as='history_delete_button'}
             }},
-            {type='frame', style='fe_history_listbox_frame', children={
-              {type='list-box', style='fe_listbox', handlers='history_listbox', save_as=true}
+            {type='frame', style='enc_history_listbox_frame', children={
+              {type='list-box', style='enc_listbox', handlers='history_listbox', save_as=true}
             }}
           }}
         }
@@ -264,9 +264,9 @@ function self.open(player, options, player_table)
   local category_buttons = {}
   for category,_ in pairs(global.encyclopedia) do
     category_buttons[#category_buttons+1] = category_frame.add{type='sprite-button', name=category..'_button', style='tool_button',
-      sprite='fe_category_'..category, tooltip={'fe-gui.category-'..category..'-plural'}}.index
+      sprite='enc_category_'..category, tooltip={'fe-gui.category-'..category..'-plural'}}.index
   end
-  category_frame[(options.category or 'item')..'_button'].style = 'fe_tool_button_active'
+  category_frame[(options.category or 'item')..'_button'].style = 'enc_tool_button_active'
   -- register handler for category switching
   gui.register_handlers('search', 'category_buttons', {name='category_buttons', player_index=player.index, gui_filters=category_buttons})
   -- set active tab
@@ -297,7 +297,7 @@ function self.open(player, options, player_table)
   local add_item = gui_data.history_listbox.add_item
   for i=1,#history do
     local entry = history[i]
-    add_item('[img=fe_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '
+    add_item('[img=enc_category_'..entry.category..'_yellow]  [img='..entry.category..'/'..entry.name..']  '
       ..(player_table.dictionary[entry.category].translations[entry.name] or entry.name))
   end
 end

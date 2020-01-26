@@ -42,7 +42,7 @@ function self.create(player, player_table, content_scrollpane, name)
   local generic_listboxes = {}
 
   local gui_data = gui.create(content_scrollpane, 'fluid', player.index,
-  {type='table', style='fe_content_table', column_count=1, children={
+  {type='table', style='enc_content_table', column_count=1, children={
     -- recipe usages
     {type='flow', save_as='recipe_usages_cell'}
   }}
