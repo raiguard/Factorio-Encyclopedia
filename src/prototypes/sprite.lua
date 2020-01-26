@@ -54,6 +54,22 @@ data:extend{
     size = 32,
     mipmap_count = 2,
     flags = {'icon'}
+  },
+  {
+    type = 'sprite',
+    name = 'fe_pin',
+    filename = '__Encyclopedia__/graphics/gui/pin.png',
+    size = 32,
+    mipmap_count = 2,
+    flags = {'icon'}
+  },
+  {
+    type = 'sprite',
+    name = 'fe_pin_dark',
+    filename = '__Encyclopedia__/graphics/gui/pin-dark.png',
+    size = 32,
+    mipmap_count = 2,
+    flags = {'icon'}
   }
 }
 

@@ -40,27 +40,6 @@ styles.fe_button_active = {
   }
 }
 
--- styles.fe_button_active_selected = {
---   type = 'button_style',
---   parent = 'button',
---   default_font_color = button_hovered_font_color,
---   default_graphical_set = {
---       base = {position={369,17}, corner_size=8},
---       shadow = default_dirt
---   },
---   hovered_font_color = button_hovered_font_color,
---   hovered_graphical_set = {
---       base = {position={369,17}, corner_size=8},
---       shadow = default_dirt,
---       glow = default_glow(default_glow_color, 0.5)
---   },
---   clicked_font_color = button_hovered_font_color,
---   clicked_graphical_set = {
---       base = {position={352,17}, corner_size=8},
---       shadow = default_dirt
---   }
--- }
-
 styles.fe_tool_button_selected = {
   type = 'button_style',
   parent = 'fe_button_selected',
@@ -75,12 +54,22 @@ styles.fe_tool_button_active = {
   size = 28
 }
 
--- styles.fe_tool_button_active_selected = {
---   type = 'button_style',
---   parent = 'fe_button_active_selected',
---   padding = 2,
---   size = 28
--- }
+styles.fe_close_button_active = {
+  type = 'button_style',
+  parent = 'close_button',
+  default_graphical_set = {
+      base = {position = {272,169}, corner_size = 8},
+      shadow = {position = {440,24}, corner_size = 8, draw_type = 'outer'}
+  },
+  hovered_graphical_set = {
+      base = {position={369,17}, corner_size=8},
+      shadow = {position = {440,24}, corner_size = 8, draw_type = 'outer'}
+  },
+  clicked_graphical_set = {
+      base = {position={352,17}, corner_size=8},
+      shadow = {position = {440,24}, corner_size = 8, draw_type = 'outer'}
+  }
+}
 
 -- --------------------------------------------------------------------------------
 -- EMPTY WIDGET STYLES

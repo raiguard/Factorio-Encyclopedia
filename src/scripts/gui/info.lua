@@ -55,6 +55,21 @@ handlers = {
       self.update_content(game.get_player(e.player_index), player_table, forward_obj.category, forward_obj.name, nil, nil, true)
     end
   },
+  pin_button = {
+    on_gui_click = function(e)
+      local player = game.get_player(e.player_index)
+      local player_table = global.players[e.player_index]
+      local gui_data = player_table.gui.info
+      gui_data.pinned = not gui_data.pinned
+      if gui_data.pinned then
+        e.element.style = 'fe_close_button_active'
+        player.opened = nil
+      else
+        e.element.style = 'close_button'
+        player.opened = gui_data.base.window
+      end
+    end
+  },
   search_button = {
     on_gui_click = function(e)
       event.raise(open_search_gui_event, {player_index=e.player_index})
@@ -62,7 +77,10 @@ handlers = {
   },
   window = {
     on_gui_closed = function(e)
-      self.close(game.get_player(e.player_index), global.players[e.player_index].gui)
+      local player_table = global.players[e.player_index]
+      if not player_table.gui.info.pinned then
+        self.close(game.get_player(e.player_index), player_table.gui)
+      end
     end
   }
 }
@@ -95,6 +113,8 @@ function self.open(player, category, name, source, player_table)
           handlers='nav_forward_button', save_as=true},
         {type='label', style={name='frame_title', left_padding=7}, caption='TEMP', save_as='window_title'},
         {type='empty-widget', style='fe_titlebar_draggable_space', save_as='titlebar_drag_handle'},
+        {type='sprite-button', style='close_button', sprite='fe_pin', hovered_sprite='fe_pin_dark', clicked_sprite='fe_pin_dark', tooltip={'fe-gui.keep-open'},
+          handlers='pin_button'},
         {type='sprite-button', style='close_button', sprite='fe_search', hovered_sprite='fe_search_dark', clicked_sprite='fe_search_dark',
           tooltip={'gui.search'}, handlers='search_button'},
         {type='sprite-button', style='close_button', sprite='utility/close_white', hovered_sprite='utility/close_black', clicked_sprite='utility/close_black',
@@ -124,6 +144,7 @@ function self.open(player, category, name, source, player_table)
   gui_data.window.force_auto_center()
   player.opened = gui_data.window
   -- export data
+  gui_data.pinned = false
   player_table.gui.info = {base=gui_data}
   
   -- POPULATE CONTENT
