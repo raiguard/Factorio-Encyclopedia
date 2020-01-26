@@ -42,8 +42,38 @@ function self.create(player, player_table, content_scrollpane, name)
   local generic_listboxes = {}
 
   local gui_data = gui.create(content_scrollpane, 'recipe', player.index,
-    {type='button', caption='demo button, please ignore'}
+    {type='table', style='fe_content_table', column_count=1, save_as='content_table'}
   )
+
+  -- SET UP RECIPE INFO
+  for row,cell in pairs{items={'ingredients', 'products'}, machines_techs={'made_in', 'unlocked_by'}} do
+    local cell_flow = common_elems.standard_cell(gui_data.content_table)
+    cell_flow.style.horizontal_spacing = 8
+    for _,type in ipairs(cell) do
+      local listbox, label = common_elems.listbox_with_label(cell_flow)
+      local add_item = listbox.add_item
+      local objects
+      if row == 'items' then
+        objects = recipe_data.prototype[type]
+      else
+        objects = recipe_data[type]
+      end
+      if objects then
+        for i=1,#objects do
+          local object = objects[i]
+          if type == 'made_in' then
+            add_item('[img=entity/'..object..']  '..dictionary.entity.translations[object] or object)
+          elseif type == 'unlocked_by' then
+            add_item('[img=technology/'..object..']  '..dictionary.technology.translations[object] or object)
+          else
+            add_item('[img='..object.type..'/'..object.name..']  '..object.amount..'x '..dictionary[object.type].translations[object.name] or object.name)
+          end
+        end
+      end
+      label.caption = {'fe-gui.'..type:gsub('_', '-'), objects and #objects or 0}
+      generic_listboxes[#generic_listboxes+1] = listbox
+    end
+  end
 
   -- SET UP GENERIC HANDLERS
   gui.register_handlers('item', 'generic_buttons', {name='generic_buttons', player_index=player.index, gui_filters=generic_buttons})
@@ -57,32 +87,3 @@ function self.destroy(player, content_scrollpane)
 end
 
 return self
-
--- for row,cell in pairs{items={'ingredients', 'products'}, machines_techs={'made_in', 'unlocked_by'}} do
---   local content_flow = common_elems.standard_cell(table, row)
---   content_flow.style.horizontal_spacing = 8
---   for _,type in ipairs(cell) do
---     local listbox, label = common_elems.listbox_with_label(content_flow, type)
---     local add_item = listbox.add_item
---     local objects
---     if row == 'items' then
---       objects = recipe_data.prototype[type]
---     else
---       objects = recipe_data[type]
---     end
---     if objects then
---       for i=1,#objects do
---         local object = objects[i]
---         if type == 'made_in' then
---           add_item('[img=entity/'..object..']  '..dictionary.entity.translations[object] or object)
---         elseif type == 'unlocked_by' then
---           add_item('[img=technology/'..object..']  '..dictionary.technology.translations[object] or object)
---         else
---           add_item('[img='..object.type..'/'..object.name..']  '..object.amount..'x '..dictionary[object.type].translations[object.name] or object.name)
---         end
---       end
---     end
---     label.caption = {'fe-gui.'..type:gsub('_', '-'), objects and #objects or 0}
---     elems.listboxes[#elems.listboxes+1] = listbox
---   end
--- end
