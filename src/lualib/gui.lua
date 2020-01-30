@@ -50,13 +50,13 @@ end
 local function deregister_handlers(gui_name, handlers_path, player_index, gui_events)
   local handlers_t = get_subtable(gui_name..'.'..handlers_path, handlers)
   gui_events = gui_events or global_data[gui_name][player_index]
-  local name = 'gui.'..gui_name..'.'..handlers_path
   if type(handlers_t) == 'function' then
+    local name = 'gui.'..gui_name..'.'..handlers_path
     event.deregister_conditional(handlers_t, name, player_index)
     gui_events[name] = nil
   else
     for n,func in pairs(handlers_t) do
-      event.deregister_conditional(func, name..'.'..n, player_index)
+      event.deregister_conditional(func, n, player_index)
       gui_events[n] = nil
     end
   end
@@ -158,17 +158,13 @@ end
 function self.destroy(parent, gui_name, player_index)
   -- deregister handlers
   local gui_tables = global_data[gui_name]
-  if gui_tables then
-    local list = gui_tables[player_index]
-    if list then
-      for n,_ in pairs(list) do
-        deregister_handlers(gui_name, string_gsub(n, '^gui%.'..gui_name..'%.', ''), player_index, list)
-      end
-      gui_tables[player_index] = nil
-      if table_size(gui_tables) == 0 then
-        global_data[gui_name] = nil
-      end
-    end
+  local list = gui_tables[player_index]
+  for n,_ in pairs(list) do
+    deregister_handlers(gui_name, string_gsub(n, '^gui%.'..gui_name..'%.', ''), player_index, list)
+  end
+  gui_tables[player_index] = nil
+  if table_size(gui_tables) == 0 then
+    global_data[gui_name] = nil
   end
   -- destroy GUI
   parent.destroy()
