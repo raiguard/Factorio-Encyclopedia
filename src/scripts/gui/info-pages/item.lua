@@ -97,8 +97,12 @@ function self.create(player, player_table, content_scrollpane, name)
   if item_data.as_ingredient or item_data.as_product then
     local cell_flow = common_elems.standard_cell(gui_data.recipe_usages_cell, {'fe-gui.usage-in-recipes'}, 'horizontal')
     cell_flow.style.horizontal_spacing = 8
+    -- hardcode the height logic for now, until the stretch_and_expand stretchable type comes out
+    -- be the height of the max amount of items in the two listboxes, up to six
+    local height = math.min(math.max(#(item_data.as_ingredient or {}), #(item_data.as_product or {})) * 28, 168)
     for _,type in ipairs{'ingredient', 'product'} do
-      local listbox, label = common_elems.listbox_with_label(cell_flow)
+      local listbox, label, other_elems = common_elems.listbox_with_label(cell_flow)
+      other_elems.listbox_frame.style.height = height
       local as_data = item_data['as_'..type]
       local add_item = listbox.add_item
       if as_data then
