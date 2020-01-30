@@ -13,7 +13,7 @@ local translation = require('lualib/translation')
 open_info_gui_event = event.generate_id('open_info_gui') -- used internally and for the remote interface
 open_search_gui_event = event.generate_id('open_search_gui') -- used internally by the mod only
 reopen_source_event = event.generate_id('reopen_source') -- used internally and for the remote interface
-categories = {'achievement', 'entity', 'equipment', 'fluid', 'item', 'recipe', 'technology', 'tile'}
+categories = {'entity', 'fluid', 'item', 'recipe', 'tile'}
 
 -- modules
 local info_gui = require('scripts/gui/info')
@@ -201,7 +201,7 @@ event.register(translation.finish_event, function(e)
     translations = e.translations,
     searchable = e.searchable
   }
-  if table_size(player_table.dictionary) == 10 then
+  if table_size(player_table.dictionary) == #categories + 2 then
     player_table.flags.allow_open_gui = true
     if player_table.flags.tried_to_open_gui then
       player_table.flags.tried_to_open_gui = nil
