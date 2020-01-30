@@ -130,10 +130,10 @@ function self.open(player, category, name, source, player_table)
         -- content scrollpane
         {type='scroll-pane', style={name='scroll_pane_under_subheader', width=478}, horizontal_scroll_policy='never', save_as='content_scrollpane'},
         -- action bar
-        {type='frame', style='subfooter_frame', direction='horizontal', children={
-          {template='pushers.horizontal'},
-          {type='label', style={right_padding=8}, caption={'fe-gui.request-info-message'}}
-        }}
+        -- {type='frame', style='subfooter_frame', direction='horizontal', children={
+        --   {template='pushers.horizontal'},
+        --   {type='label', style={right_padding=8}, caption={'fe-gui.request-info-message'}}
+        -- }}
       }}
     }}
   )

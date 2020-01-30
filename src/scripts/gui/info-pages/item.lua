@@ -14,13 +14,13 @@ local table_sort = table.sort
 local general_data = {
   stack_size = true,
   place_result = 'place_result',
-  place_as_equipment_result = 'place_as_equipment_result',
   place_as_tile_result = 'place_as_tile_result',
   fuel_value = true,
   fuel_category = true,
   burnt_result = 'item',
   inventory_size_bonus = true,
-  durability = true
+  durability = true,
+  magazine_size = true
 }
 
 -- objects
