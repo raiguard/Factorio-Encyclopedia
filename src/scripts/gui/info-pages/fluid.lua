@@ -12,7 +12,13 @@ local common_handlers = require('scripts/gui/common-handlers')
 local table_sort = table.sort
 
 local general_data = {
-  
+  localised_description = true,
+  default_temperature = true,
+  max_temperature = true,
+  heat_capacity = true,
+  gas_temperature = true,
+  emissions_multiplier = true,
+  fuel_value = true
 }
 
 -- objects
@@ -36,6 +42,7 @@ gui.add_handlers('item', {
 function self.create(player, player_table, content_scrollpane, name)
   local encyclopedia = global.encyclopedia
   local fluid_data = encyclopedia.fluid[name]
+  local fluid_prototype = fluid_data.prototype
   local dictionary = player_table.dictionary
 
   local generic_buttons = {}
@@ -43,13 +50,24 @@ function self.create(player, player_table, content_scrollpane, name)
 
   local gui_data = gui.create(content_scrollpane, 'fluid', player.index,
   {type='table', style='enc_content_table', column_count=1, children={
-    -- recipe usages
+    {type='table', style='bordered_table', column_count=1, save_as='general_info_table'},
     {type='flow', save_as='recipe_usages_cell'}
   }}
   )
 
+  -- GENERAL INFO TABLE
+  local info_table = gui_data.general_info_table
+  for key,action in pairs(general_data) do
+    if action == true then
+      -- common action
+      local data = fluid_prototype[key]
+      if data and (type(data) == 'string' or (type(data) == 'number' and data > 0)) then
+        common_elems.info_table_entry(info_table, key, data)
+      end
+    end
+  end
+
   -- POPULATE RECIPE USAGES
-  local generic_listboxes = {}
   if fluid_data.as_ingredient or fluid_data.as_product then
     local cell_flow = common_elems.standard_cell(gui_data.recipe_usages_cell, {'fe-gui.usage-in-recipes'}, 'horizontal')
     cell_flow.style.horizontal_spacing = 8
